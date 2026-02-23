@@ -10,7 +10,9 @@ readme = "README.md"
 requires-python = "^3.11"
 dependencies = [
     "pooch (>=1.9.0,<2.0.0)",
-    "tqdm (>=4.67.3,<5.0.0)"
+    "tqdm (>=4.67.3,<5.0.0)",
+    "weasyprint (>=68.1,<69.0)",
+    "jsonschema (>=4.26.0,<5.0.0)"
 ]
 
 

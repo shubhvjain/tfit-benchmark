@@ -91,6 +91,12 @@ containers: build-coregtor build-coregnet ## Build all containers
 datasets: ## Download all datasets required
 	poetry run python scripts/datasets.py --all
 
+new-exp: ## create new exp file. pass name=exp1
+	poetry run python scripts/util_project_files.py new exp $(name)
+
+new-analysis: ## create new analysis file. pass name=analysis1
+	poetry run python scripts/util_project_files.py new analysis $(name)
+
 help: ## Show help 
 	@echo "Available targets:"
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sed 's/Makefile://' | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "  %-20s %s\n", $$1, $$2}'

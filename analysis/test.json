@@ -1,0 +1,15 @@
+{
+  "type": "result_comparison",
+  "about": "",
+  "rerun": false,
+  "experiments": [
+    {
+      "exp": "exp_id",
+      "dataset": "dataset_id",
+      "tool": "coregtor",
+      "result": "result_default",
+      "title": ""
+    }
+  ],
+  "n_jobs": 4
+}

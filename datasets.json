@@ -1,0 +1,114 @@
+{
+  "datasets": [
+    {
+      "id": "tflist",
+      "title": "A list of transcription factors",
+      "url": "https://resources.aertslab.org/cistarget/tf_lists/allTFs_hg38.txt",
+      "about": "From : https://resources.aertslab.org/cistarget/tf_lists/",
+      "file_name": "allTFs_hg38.txt",
+      "file_output": "dataframe",
+      "read_options": {
+        "names": ["gene_name"],
+        "header": null
+      }
+    },
+    {
+      "id": "bladder",
+      "title": "Gene TPMs for Bladder",
+      "url": "https://storage.googleapis.com/adult-gtex/bulk-gex/v10/rna-seq/tpms-by-tissue/gene_tpm_v10_bladder.gct.gz",
+      "about": "Source https://www.gtexportal.org/home/downloads/adult-gtex/bulk_tissue_expression",
+      "file_name": "gene_tpm_v10_bladder.gct",
+      "file_output": "gtex_bulk"
+    },
+    {
+      "id": "blood",
+      "title": "Gene TPMs for Whole Blood",
+      "url": "https://storage.googleapis.com/adult-gtex/bulk-gex/v10/rna-seq/tpms-by-tissue/gene_tpm_v10_whole_blood.gct.gz",
+      "about": "Source https://www.gtexportal.org/home/downloads/adult-gtex/bulk_tissue_expression",
+      "file_name": "gene_tpm_v10_whole_blood.gct",
+      "file_output": "gtex_bulk"
+    },
+    {
+      "id": "cortex-ba9",
+      "title": "Gene TPMs for Brain - Frontal Cortex (BA9)",
+      "url": "https://storage.googleapis.com/adult-gtex/bulk-gex/v10/rna-seq/tpms-by-tissue/gene_tpm_v10_brain_frontal_cortex_ba9.gct.gz",
+      "about": "Source https://www.gtexportal.org/home/downloads/adult-gtex/bulk_tissue_expression",
+      "file_name": "gene_tpm_v10_brain_frontal_cortex_ba9.gct",
+      "file_output": "gtex_bulk"
+    },
+    {
+      "id": "hypothalamus",
+      "title": "Gene TPMs for Brain - Hypothalamus",
+      "url": "https://storage.googleapis.com/adult-gtex/bulk-gex/v10/rna-seq/tpms-by-tissue/gene_tpm_v10_brain_hypothalamus.gct.gz",
+      "about": "Source https://www.gtexportal.org/home/downloads/adult-gtex/bulk_tissue_expression",
+      "file_name": "gene_tpm_v10_brain_hypothalamus.gct",
+      "file_output": "gtex_bulk"
+    },
+    {
+      "id": "amygdala",
+      "title": "Gene TPMs for Brain - Amygdala",
+      "url": "https://storage.googleapis.com/adult-gtex/bulk-gex/v10/rna-seq/tpms-by-tissue/gene_tpm_v10_brain_amygdala.gct.gz",
+      "about": "Source https://www.gtexportal.org/home/downloads/adult-gtex/bulk_tissue_expression",
+      "file_name": "gene_tpm_v10_brain_amygdala.gct",
+      "file_output": "gtex_bulk"
+    },
+    {
+      "id": "pancreas",
+      "title": "Gene TPMs for Pancreas (Islets)",
+      "url": "https://storage.googleapis.com/adult-gtex/bulk-gex/v11/rna-seq/tpms-by-tissue/gene_tpm_v11_pancreas_islets.gct.gz",
+      "about": "Source https://www.gtexportal.org/home/downloads/adult-gtex/bulk_tissue_expression",
+      "file_name": "gene_tpm_v11_pancreas_islets.gct",
+      "file_output": "gtex_bulk"
+      
+    },
+    {
+      "id": "thyroid",
+      "title": "Gene TPMs for Thyroid",
+      "url": "https://storage.googleapis.com/adult-gtex/bulk-gex/v11/rna-seq/tpms-by-tissue/gene_tpm_v11_thyroid.gct.gz",
+      "about": "Source https://www.gtexportal.org/home/downloads/adult-gtex/bulk_tissue_expression",
+      "file_name": "gene_tpm_v11_thyroid.gct",
+      "file_output": "gtex_bulk"
+     
+    },
+    {
+      "id": "heart_left_ventricle",
+      "title": "Gene TPMs for Heart - Left Ventricle",
+      "url": "https://storage.googleapis.com/adult-gtex/bulk-gex/v11/rna-seq/tpms-by-tissue/gene_tpm_v11_heart_left_ventricle.gct.gz",
+      "about": "Source https://www.gtexportal.org/home/downloads/adult-gtex/bulk_tissue_expression",
+      "file_name": "gene_tpm_v11_heart_left_ventricle.gct",
+      "file_output": "gtex_bulk"
+    },
+    {
+      "id": "heart_atrial_appendage",
+      "title": "Gene TPMs for Heart - Atrial Appendage",
+      "url": "https://storage.googleapis.com/adult-gtex/bulk-gex/v11/rna-seq/tpms-by-tissue/gene_tpm_v11_heart_atrial_appendage.gct.gz",
+      "about": "Source https://www.gtexportal.org/home/downloads/adult-gtex/bulk_tissue_expression",
+      "file_name": "gene_tpm_v11_heart_atrial_appendage.gct",
+      "file_output": "gtex_bulk"
+    },
+     {
+      "id": "kidney_cortex",
+      "title": "Gene TPMs for Kidney - Cortex",
+      "url": "https://storage.googleapis.com/adult-gtex/bulk-gex/v11/rna-seq/tpms-by-tissue/gene_tpm_v11_kidney_cortex.gct.gz",
+      "about": "Source https://www.gtexportal.org/home/downloads/adult-gtex/bulk_tissue_expression",
+      "file_name": "gene_tpm_v11_kidney_cortex.gct",
+      "file_output": "gtex_bulk"
+    },
+       {
+      "id": "lung",
+      "title": "Gene TPMs for Lung",
+      "url": "https://storage.googleapis.com/adult-gtex/bulk-gex/v11/rna-seq/tpms-by-tissue/gene_tpm_v11_lung.gct.gz",
+      "about": "Source https://www.gtexportal.org/home/downloads/adult-gtex/bulk_tissue_expression",
+      "file_name": "gene_tpm_v11_lung.gct",
+      "file_output": "gtex_bulk"
+    },
+     {
+      "id": "muscle_skeletal",
+      "title": "Gene TPMs for Muscle - Skeletal",
+      "url": "https://storage.googleapis.com/adult-gtex/bulk-gex/v11/rna-seq/tpms-by-tissue/gene_tpm_v11_muscle_skeletal.gct.gz",
+      "about": "Source https://www.gtexportal.org/home/downloads/adult-gtex/bulk_tissue_expression",
+      "file_name": "gene_tpm_v11_muscle_skeletal.gct",
+      "file_output": "gtex_bulk"
+    }
+  ]
+}

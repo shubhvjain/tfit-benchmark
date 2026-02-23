@@ -1,0 +1,23 @@
+Bootstrap: docker
+From: bioconductor/bioconductor_docker:RELEASE_3_16
+
+%post
+    # Install R reticulate
+    R -e "install.packages('reticulate', repos='https://cloud.r-project.org')"
+
+    # Install Python deps
+    python3 -m pip install --no-cache-dir \
+        pandas \
+        python-dotenv \
+        pathlib && \
+    rm -rf /root/.cache/pip/*
+
+    # Install CoRegNet
+    R -e "BiocManager::install('CoRegNet', update = FALSE, ask = FALSE)"
+
+    # Set reticulate to system Python
+    echo "Sys.setenv(RETICULATE_PYTHON = '/usr/bin/python3')" >> /usr/local/lib/R/etc/Rprofile.site
+
+%environment
+    export PYTHONPATH=/app/scripts
+

@@ -1,0 +1,22 @@
+{
+  "type": "gtex_stats",
+  "about": "To generate stats related to GTEx datasets used in the experiments ",
+  "rerun_plot": false,
+  "rerun_summary": true,
+  "datasets": [
+    { "id": "bladder" },
+    { "id": "blood" },
+    { "id": "cortex-ba9" },
+    { "id": "hypothalamus" },
+    { "id": "amygdala" },
+    { "id": "thyroid" },
+    { "id": "muscle_skeletal" },
+    { "id": "lung" },
+    { "id": "kidney_cortex" },
+    { "id": "heart_atrial_appendage" },
+    { "id": "heart_left_ventricle" }
+  ],
+  "datasets1": [
+    { "id": "bladder" }
+  ]
+}

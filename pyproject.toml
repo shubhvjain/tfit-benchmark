@@ -11,8 +11,11 @@ requires-python = "^3.11"
 dependencies = [
     "pooch (>=1.9.0,<2.0.0)",
     "tqdm (>=4.67.3,<5.0.0)",
-    "weasyprint (>=68.1,<69.0)",
-    "jsonschema (>=4.26.0,<5.0.0)"
+    "jsonschema (>=4.26.0,<5.0.0)",
+    "seaborn (>=0.13.2,<0.14.0)",
+    "tfitpy (>=0.0.6,<0.0.7) ; python_version >= \"3.11\" and python_full_version != \"3.14.1\" and python_version < \"4.0\"",
+    "xhtml2pdf (>=0.2.17,<0.3.0)",
+    "scikit-learn (>=1.8.0,<2.0.0)"
 ]
 
 

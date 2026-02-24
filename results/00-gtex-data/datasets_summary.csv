@@ -1,0 +1,12 @@
+id,title,n_samples,n_total_genes,n_tf,n_expressed_80_tf,mean_gene_mean_tf,mean_gene_variance_tf,n_duplicate_tf,n_targets,n_expressed_80_target,mean_gene_mean_target,n_duplicate_target
+bladder,Gene TPMs for Bladder,77,59033,1873,1646,25.3158,1237.2544,4,55980,24395,16.6646,92
+blood,Gene TPMs for Whole Blood,803,59033,1873,1454,16.7889,2832.3914,4,55980,18647,16.9446,92
+cortex-ba9,Gene TPMs for Brain - Frontal Cortex (BA9),269,59033,1873,1659,14.6634,282.2368,4,55980,24498,17.0144,92
+hypothalamus,Gene TPMs for Brain - Hypothalamus,257,59033,1873,1687,12.3478,279.9018,4,55980,24453,17.0905,92
+amygdala,Gene TPMs for Brain - Amygdala,181,59033,1873,1658,10.8802,246.0067,4,55980,23415,17.1387,92
+thyroid,Gene TPMs for Thyroid,684,74628,1866,1644,30.1372,2429.8642,7,71455,27543,12.9689,224
+muscle_skeletal,Gene TPMs for Muscle - Skeletal,818,74628,1866,1600,15.5414,688.0765,7,71455,21830,13.3447,224
+lung,Gene TPMs for Lung,604,74628,1866,1626,28.1332,1911.0027,7,71455,27141,13.0205,224
+kidney_cortex,Gene TPMs for Kidney - Cortex,104,74628,1866,1644,13.5676,680.2786,7,71455,25921,13.3955,224
+heart_atrial_appendage,Gene TPMs for Heart - Atrial Appendage,461,74628,1866,1599,12.3621,475.6351,7,71455,24589,13.4265,224
+heart_left_ventricle,Gene TPMs for Heart - Left Ventricle,452,74628,1866,1572,8.8167,343.5127,7,71455,22304,13.5178,224

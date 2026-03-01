@@ -177,7 +177,7 @@ def result(exp_name: str, dataset_id: str):
 
     if not all_genes_done(paths["db_file"]):
         print("not all genes are done yet, check status.db")
-        sys.exit(1)
+        
 
     with open(paths["input_file"]) as f:
         input_data = json.load(f)

@@ -17,7 +17,7 @@ from pathlib import Path
 from jsonschema import validate, ValidationError, Draft7Validator
 
 
-# Schemas 
+# Schemas
 
 SCHEMAS = {
     "exp": {
@@ -144,17 +144,14 @@ SCHEMAS = {
         "properties": {
             "type": {
                 "type": "string",
-                "enum": ["result_comparison"],
+                "enum": ["result_comparison", "gtex_data_stats"],
                 "default": "result_comparison"
             },
             "about": {
                 "type": "string",
                 "default": ""
             },
-            "rerun": {
-                "type": "boolean",
-                "default": False
-            },
+           
             "experiments": {
                 "type": "array",
                 "items": {
@@ -178,16 +175,55 @@ SCHEMAS = {
                     }
                 ]
             },
+            "datasets": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "required": ["id"],
+                    "properties": {
+                        "id":     {"type": "string"},
+
+                    }
+                },
+                "default": [
+                    {
+                        "id": "dataset_id"
+                    }
+                ]
+            },
+
             "n_jobs": {
                 "type": "integer",
                 "default": 4
+            }
+        },
+        "if": {
+            "properties": {"type": {"const": "result_comparison"}}
+        },
+        "then": {
+            "required": ["experiments"],
+            "properties": {
+                "rerun": {
+                    "type": "boolean",
+                    "default": False
+                },
+                "experiments": {"minItems": 1},
+                "field_a": {"type": "string"},
+                "field_b": {"type": "integer"}
+            }
+        },
+        "else": {
+            "required": ["datasets", "field_c"],
+            "properties": {
+                "datasets": {"minItems": 1},
+                "field_c": {"type": "string"}
             }
         }
     }
 }
 
 
-# Paths 
+# Paths
 
 def get_path(filetype: str) -> Path:
     if filetype == "exp":
@@ -203,7 +239,7 @@ def get_path(filetype: str) -> Path:
     return Path(p)
 
 
-#  Defaults 
+#  Defaults
 
 def build_defaults(schema: dict) -> dict:
     if schema.get("type") == "object":

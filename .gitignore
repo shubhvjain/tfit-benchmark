@@ -222,3 +222,5 @@ job_status/
 .DS_Store
 
 .env.project
+
+outputs/test

@@ -6,7 +6,7 @@
   "datasets": ["amygdala", "bladder","blood","cortex-ba9","heart_left_ventricle","heart_atrial_appendage","hypothalamus","kidney_cortex","lung","muscle_skeletal","thyroid"],
   "target": {
     "type": "no_tf",
-    "top_expressed_n": 20
+    "non_zero_threshold": 0.8
   },
   "tf": {
     "non_zero_threshold": 0.8
@@ -18,9 +18,9 @@
         "model": "rf",
         "model_options": {
           "max_depth": 5,
+          "n_jobs":-1,
           "n_estimators": 1000,
-          "random_state": 120,
-          "n_jobs":-1
+          "random_state": 120
         }
       },
       "tree_paths": {},

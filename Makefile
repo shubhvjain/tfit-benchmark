@@ -1,9 +1,9 @@
-# ── Environment 
+# Environment 
 mode ?= local
 include .env.$(mode)
 export
 
-# ── Common 
+# Common 
 SCRIPTS_DIR      = /app/scripts
 CONTAINERS_DIR   = containers
 WS_DATA          = /workspace/data
@@ -13,7 +13,7 @@ WS_OUTPUT        = /workspace/output
 WS_RESULT_INPUT  = /workspace/result_input
 WS_RESULT_OUTPUT = /workspace/result_output
 
-# ── Container runtime config
+# Container runtime config
 ifeq ($(container_app),docker)
 CONTAINER_RUNTIME = docker run --rm -w /app
 COREGTOR_IMAGE = tfit-coregtor:latest
@@ -59,14 +59,14 @@ endif
 
 RUN = $(CONTAINER_RUNTIME) $(BIND_VOLUME) $(CONTAINER_ENV)
 
-# ── Targets
+# Targets
 .PHONY: build-coregtor build-coregnet containers datasets new-exp new-analysis analysis help
 
 build-coregtor: ## Build coregtor container
-	$(BUILD_COREGTOR)
+    $(BUILD_COREGTOR)
 
 build-coregnet: ## Build coregnet container
-	$(BUILD_COREGNET)
+    $(BUILD_COREGNET)
 
 containers: build-coregtor build-coregnet ## Build all containers
 
@@ -75,6 +75,14 @@ datasets: ## Download all datasets required
 
 new-exp: ## Create new exp file. Pass name=exp1
 	poetry run python scripts/util_project_files.py new exp $(name)
+
+exp-init: ## Initialize an experiment
+	poetry run python scripts/exp_init.py init $(name)
+
+run-coregtor: ## Run coregtor pipeline. Actions: run, result, update_status, reset_failed, reset_claimed
+	$(CONTAINER_RUNTIME) $(BIND_VOLUME) $(CONTAINER_ENV) $(COREGTOR_IMAGE) python $(SCRIPTS_DIR)/run_coregtor.py \
+		$(action) $(id) $(dataset) $(if $(filter reset_claimed,$(action)),$(worker),) $(if $(filter run,$(action)),$(if $(worker),--worker $(worker),) $(if $(batch),--batch $(batch),),)
+
 
 new-analysis: ## Create new analysis file. Pass name=analysis1
 	poetry run python scripts/util_project_files.py new analysis $(name)

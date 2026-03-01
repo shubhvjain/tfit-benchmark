@@ -2,9 +2,46 @@
 import pandas as pd
 from pathlib import Path
 import os
-import json 
+import json
 import sqlite3
 
+
+def get_exp_path() -> Path:
+    p = os.getenv("EXP_INPUT_PATH")
+    if not p:
+        raise EnvironmentError("EXP_PATH not set")
+    return Path(p)
+
+
+def get_temp_path() -> Path:
+    p = os.getenv("EXP_TEMP_PATH")
+    if not p:
+        raise EnvironmentError("EXP_TEMP_PATH not set")
+    return Path(p)
+
+
+def get_output_path() -> Path:
+    p = os.getenv("EXP_OUTPUT_PATH")
+    if not p:
+        raise EnvironmentError("EXP_OUTPUT_PATH not set")
+    return Path(p)
+
+
+def get_data_path() -> Path:
+    p = os.getenv("DATA_PATH")
+    if not p:
+        raise EnvironmentError("DATA_PATH not set")
+    return Path(p)
+
+
+def get_experiment_paths(exp_name, dataset, tool):
+    return {
+        "exp_file": get_exp_path() / f"{exp_name}.json",
+        "temp_folder": get_temp_path() / exp_name / dataset / tool,
+        "output_folder": get_output_path() / exp_name / dataset/tool,
+        "input_file": get_temp_path() / exp_name / dataset / "input.json",
+        "db_file": get_output_path() / exp_name / dataset/tool/"status.db"
+    }
 
 
 def get_mappings(gene_list, source, target, batch_size=900):
@@ -19,16 +56,17 @@ def get_mappings(gene_list, source, target, batch_size=900):
     Returns:
         Dictionary mapping {source_value: target_value, ...}
     """
-    db_path = Path(os.getenv("DATA_PATH"))/"gencode"/"gene_name_mapping.db"
+    db_path = get_data_path()/"gencode"/"gene_name_mapping.db"
     con = sqlite3.connect(db_path)
-    
+
     try:
         # Remove None/NaN and get unique values
-        unique_values = [x for x in set(gene_list) if x is not None and pd.notna(x)]
+        unique_values = [x for x in set(
+            gene_list) if x is not None and pd.notna(x)]
         if len(unique_values) == 0:
             print("No values to map")
             return {}
-        
+
         # Process in batches to avoid SQLite variable limit
         mapping_dict = {}
         for i in range(0, len(unique_values), batch_size):
@@ -40,63 +78,67 @@ def get_mappings(gene_list, source, target, batch_size=900):
                 WHERE {source} IN ({placeholders})
                 AND {target} IS NOT NULL
             """
-            
+
             # Execute query and update mapping dict
             mapping_df = pd.read_sql_query(query, con, params=batch)
-            mapping_dict.update(dict(zip(mapping_df[source], mapping_df[target])))
-        
+            mapping_dict.update(
+                dict(zip(mapping_df[source], mapping_df[target])))
+
         # Report statistics
         total = len(gene_list)
         unique_count = len(unique_values)
         mapped_count = len(mapping_dict)
         failed_count = unique_count - mapped_count
-        null_in_results = sum(1 for gene in gene_list if gene not in mapping_dict)
-        
+        null_in_results = sum(
+            1 for gene in gene_list if gene not in mapping_dict)
+
         print(f"Mapping from {source} to {target}:")
         print(f"  Total input values: {total}")
         print(f"  Unique values: {unique_count}")
         print(f"  Successfully mapped: {mapped_count}")
         print(f"  Failed to map: {failed_count}")
-        print(f"  Null results: {null_in_results} ({null_in_results/total*100:.2f}%)")
-        
+        print(
+            f"  Null results: {null_in_results} ({null_in_results/total*100:.2f}%)")
+
         return mapping_dict
-    
+
     finally:
         con.close()
 
+
 def get_dataset(name):
     """Load dataset using metadata 'file_output' field"""
-    p = Path(os.getenv("DATA_PATH")) / f"{name}"
+    p = get_data_path() / f"{name}"
     meta_path = p / "metadata.json"
-    
+
     if not meta_path.exists():
         raise FileNotFoundError(f"Dataset '{name}' not found at {meta_path}")
-    
+
     with open(meta_path, "r") as f:
         meta = json.load(f)
-    
+
     # print("Metadata:", meta)
     file_path = p / meta["file_name"]
     # print("Data file:", file_path)
-    
+
     # Handle specific file_output types
     output_type = meta.get("file_output", "dataframe").lower()
     read_options = meta.get("read_options", {})
-    
+
     if output_type == "dataframe":
         # TF list example: single column with custom names
-        default_options = {"names":None, "header":0}
+        default_options = {"names": None, "header": 0}
         opts = default_options.copy()
         opts.update(read_options)
         data = pd.read_csv(file_path, **opts)
-        
+
     elif output_type == "gtex_bulk":
         # Use your custom GCT reader
         data = read_gct(file_path)
-        
+
     else:
         raise ValueError(f"Unsupported file_output: {output_type}")
-    
+
     return meta, data
 
 
@@ -133,7 +175,8 @@ def read_gct(file_path) -> pd.DataFrame:
         # print(df)
         gene = df["Name"].values.tolist()
         # print(gene)
-        mps = get_mappings(gene_list=gene,source='gene_id',target='gene_name')
+        mps = get_mappings(gene_list=gene, source='gene_id',
+                           target='gene_name')
         # print(mps)
         df["Name"] = df["Name"].map(mps)
         if "Name" not in df.columns or "Description" not in df.columns:

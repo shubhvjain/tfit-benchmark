@@ -8,8 +8,6 @@ SHELL ["/bin/bash", "-c"]
 RUN --mount=type=cache,target=/opt/conda/pkgs \
     mamba create -y -p /opt/core-3.11 \
     python=3.11 \
-    "weasyprint>=60.0" \
-    "tinycss2>=1.4.0" \
     numpy \
     pandas \
     scikit-learn \

@@ -314,6 +314,7 @@ def update_run_status(db_path: Path, checkpoint_dir: Path, check_internal: bool 
             print(f"  {status}: {count}")
 
     finally:
+        conn.execute("PRAGMA wal_checkpoint(TRUNCATE)")
         conn.close()
 
 

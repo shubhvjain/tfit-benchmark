@@ -222,116 +222,82 @@ def update_run_status(db_path: Path, checkpoint_dir: Path, check_internal: bool 
     
     Behavior:
     - If check_internal=False (fast mode):
-        - If .pkl exists - mark as 'done'
-        - If status is 'claimed' but no .pkl - reset to 'pending'
+        - If .pkl exists -> mark as 'done'
+        - If status is 'claimed' but no .pkl -> reset to 'pending'
     
     - If check_internal=True (thorough mode):
         - Reads each .pkl file to check internal success field
-        - If success=True - mark as 'done'
-        - If success=False - mark as 'run_failure' with error message
-        - If status is 'claimed' but no .pkl - reset to 'pending'
+        - If success=True -> mark as 'done'
+        - If success=False -> mark as 'run_failure' with error message
+        - If status is 'claimed' but no .pkl -> reset to 'pending'
     """
     import joblib
     from joblib import Parallel, delayed
-    
-    conn = sqlite3.connect(db_path, timeout=30)
-    conn.execute("PRAGMA journal_mode=WAL")
-    
-    # Get all pkl files
+
+    def check_pkl_file(pkl_file: Path) -> tuple[str, str, str | None]:
+        gene = pkl_file.stem
+        try:
+            checkpoint = joblib.load(pkl_file)
+            if checkpoint.get("success", False):
+                return ("done", gene, None)
+            return ("run_failure", gene, (checkpoint.get("error", "") or "")[:500])
+        except Exception as e:
+            return ("run_failure", gene, f"Failed to read checkpoint: {str(e)[:400]}")
+
     pkl_files = list(checkpoint_dir.glob("*.pkl"))
     completed_on_disk = {f.stem for f in pkl_files}
-    
-    if not check_internal:
-        # Fast mode: just check if pkl exists
-        print(f"Fast mode: checking {len(pkl_files)} checkpoint files...")
-        
-        if completed_on_disk:
-            conn.executemany(
-                "UPDATE genes SET status='done', worker=NULL, error=NULL WHERE gene=? AND status != 'done'",
-                [(g,) for g in completed_on_disk]
-            )
-        
-    else:
-        # Thorough mode: read pkl files in parallel to check internal success
-        def check_pkl_file(pkl_file: Path):
-            """Helper function to check a single pkl file."""
-            gene = pkl_file.stem
-            try:
-                checkpoint = joblib.load(pkl_file)
-                success = checkpoint.get("success", False)
-                error = checkpoint.get("error", "")
-                
-                if success:
-                    return ("done", gene, None)
-                else:
-                    return ("run_failure", gene, error[:500])
-                    
-            except Exception as e:
-                # If we can't read the checkpoint, treat it as failed
-                return ("run_failure", gene, f"Failed to read checkpoint: {str(e)[:400]}")
-        
-        print(f"Thorough mode: checking {len(pkl_files)} checkpoint files with {n_jobs} workers...")
-        
-        # Process pkl files in parallel
-        results = Parallel(n_jobs=n_jobs, verbose=1)(
-            delayed(check_pkl_file)(pkl_file)
-            for pkl_file in pkl_files
-        )
-        
-        # Separate into done and failed
-        done_genes = []
-        failed_genes = []
-        
-        for status, gene, error in results:
-            if status == "done":
-                done_genes.append((gene,))
-            else:
-                failed_genes.append((error, gene))
-        
-        # Update done genes
-        if done_genes:
-            conn.executemany(
-                "UPDATE genes SET status='done', worker=NULL, error=NULL WHERE gene=?",
-                done_genes
-            )
-        
-        # Update run_failure genes
-        if failed_genes:
-            print("failed genes")
-            print(failed_genes)
-            conn.executemany(
-                "UPDATE genes SET status='run_failure', worker=NULL WHERE gene=?",
-                [(g,) for _, g in failed_genes]
-            )
-            conn.executemany(
-                "UPDATE genes SET error=? WHERE gene=?",
-                failed_genes
-            )
-    
-    # Reset stale claimed genes (no pkl file exists) - applies to both modes
-    claimed_rows = conn.execute(
-        "SELECT gene FROM genes WHERE status='claimed'"
-    ).fetchall()
 
-    stale = [(g,) for (g,) in claimed_rows if g not in completed_on_disk]
-    if stale:
-        conn.executemany(
-            "UPDATE genes SET status='pending', worker=NULL WHERE gene=?",
-            stale
-        )
-    
-    conn.commit()
-    
-    # Print summary
-    print("\nStatus summary:")
-    rows = conn.execute(
-        "SELECT status, COUNT(*) FROM genes GROUP BY status ORDER BY status"
-    ).fetchall()
-    
-    for status, count in rows:
-        print(f"  {status}: {count}")
-        
-    conn.close()
+    with sqlite3.connect(db_path, timeout=30) as conn:
+        conn.execute("PRAGMA journal_mode=WAL")
+
+        if not check_internal:
+            print(f"Fast mode: checking {len(pkl_files)} checkpoint files...")
+            if completed_on_disk:
+                conn.executemany(
+                    "UPDATE genes SET status='done', worker=NULL, error=NULL WHERE gene=? AND status != 'done'",
+                    [(g,) for g in completed_on_disk],
+                )
+
+        else:
+            print(f"Thorough mode: checking {len(pkl_files)} checkpoint files with {n_jobs} workers...")
+            results = Parallel(n_jobs=n_jobs, verbose=1)(
+                delayed(check_pkl_file)(f) for f in pkl_files
+            )
+
+            done_genes = [(g,) for status, g, _ in results if status == "done"]
+            failed_genes = [(err, g) for status, g, err in results if status == "run_failure"]
+
+            if done_genes:
+                conn.executemany(
+                    "UPDATE genes SET status='done', worker=NULL, error=NULL WHERE gene=? AND status != 'done'",
+                    done_genes,
+                )
+            if failed_genes:
+                print(f"Failed genes ({len(failed_genes)}): {[g for _, g in failed_genes]}")
+                conn.executemany(
+                    "UPDATE genes SET status='run_failure', worker=NULL, error=? WHERE gene=?",
+                    failed_genes,
+                )
+
+        # Reset stale claimed jobs with no checkpoint file
+        stale = conn.execute(
+            "SELECT gene FROM genes WHERE status='claimed'"
+        ).fetchall()
+        stale_genes = [(g,) for (g,) in stale if g not in completed_on_disk]
+        if stale_genes:
+            print(f"Resetting {len(stale_genes)} stale claimed genes to pending...")
+            conn.executemany(
+                "UPDATE genes SET status='pending', worker=NULL WHERE gene=?",
+                stale_genes,
+            )
+
+        # Print summary
+        rows = conn.execute(
+            "SELECT status, COUNT(*) FROM genes GROUP BY status ORDER BY status"
+        ).fetchall()
+        print("\nStatus summary:")
+        for status, count in rows:
+            print(f"  {status}: {count}")
 
 
 def reset_failed(db_path: Path):

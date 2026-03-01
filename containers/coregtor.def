@@ -1,10 +1,12 @@
 Bootstrap: docker
 From: condaforge/miniforge3:latest
 
-%post
-    export PATH="/opt/conda/bin:$PATH"
+%files
+    containers/coregtor_requirements.txt /app/requirements.txt
 
-    # Install packages via mamba into /opt/core-3.11
+%post -c /bin/bash
+    cd /app
+
     mamba create -y -p /opt/core-3.11 \
         python=3.11 \
         numpy \
@@ -18,22 +20,15 @@ From: condaforge/miniforge3:latest
         tqdm \
         -c conda-forge
 
-    # Install pip requirements
-    source /opt/conda/etc/profile.d/conda.sh
-    conda activate /opt/core-3.11
+    source activate /opt/core-3.11
     pip install --upgrade pip
     pip install -r /app/requirements.txt
-
-%files
-    containers/coregtor_requirements.txt /app/requirements.txt
 
 %environment
     export PATH="/opt/core-3.11/bin:$PATH"
 
 %labels
-    Author your-name
     Version 1.0
-    Base condaforge/miniforge3:latest
 
 %help
     Coregtor container with Python 3.11 conda environment at /opt/core-3.11.

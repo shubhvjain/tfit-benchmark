@@ -279,16 +279,32 @@ class Pipeline:
 
 
 class PipelineResults:
-    def __init__(self, options: Dict[str, Any], tflist: list, exp_title: str = None):
+    def __init__(self, options: Dict[str, Any], tflist: list, exp_title: str = None, targets: List[str] = None):
         self.tflist = tflist
         jsonschema.validate(instance=options, schema=SCHEMA)
         self.options = options
         self.title = exp_title
         self.checkpoint_dir = Path(os.path.expandvars(self.options["paths"]["temp"]))
         self.output_dir = Path(os.path.expandvars(self.options["paths"]["output"]))
+        self.targets = targets  # List of targets to process
 
     def get_successful_targets(self) -> List[str]:
-        return [f.stem for f in self.checkpoint_dir.glob("*.pkl")]
+        """Get list of targets to process.
+        
+        If targets were explicitly provided, use those.
+        Otherwise, scan checkpoint directory for pkl files.
+        """
+        if self.targets is not None:
+            # Filter to only include targets that have pkl files
+            available = {f.stem for f in self.checkpoint_dir.glob("*.pkl")}
+            filtered = [t for t in self.targets if t in available]
+            if len(filtered) != len(self.targets):
+                missing = set(self.targets) - available
+                print(f"Warning: {len(missing)} targets missing pkl files: {list(missing)[:5]}...")
+            return filtered
+        else:
+            # Fallback: scan directory for pkl files
+            return [f.stem for f in self.checkpoint_dir.glob("*.pkl")]
 
     def generate_clusters_file(self):
         targets = self.get_successful_targets()

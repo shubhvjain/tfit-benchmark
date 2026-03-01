@@ -172,12 +172,21 @@ def run(exp_name: str, dataset_id: str, worker_id: str, batch_size: int):
 
 #  ------  Result  ------ 
 
-def result(exp_name: str, dataset_id: str):
+def result(exp_name: str, dataset_id: str,n_jobs:int = 4):
     paths = get_experiment_paths(exp_name, dataset_id,TOOL)
 
     if not all_genes_done(paths["db_file"]):
         print("not all genes are done yet, check status.db")
-        
+
+    # Get list of successfully completed targets from database
+    conn = sqlite3.connect(paths["db_file"], timeout=30)
+    targets = conn.execute(
+        "SELECT gene FROM genes WHERE status='done' ORDER BY gene"
+    ).fetchall()
+    conn.close()
+    
+    target_list = [r[0] for r in targets]
+    print(f"Found {len(target_list)} successfully completed genes")
 
     with open(paths["input_file"]) as f:
         input_data = json.load(f)
@@ -186,39 +195,118 @@ def result(exp_name: str, dataset_id: str):
         exp = json.load(f)
 
     config = build_config(exp_name, dataset_id, exp, [])
+    if "result_generation" not in config:
+        config["result_generation"]= {}
+    config["result_generation"]["n_jobs"] = n_jobs
     tfs = input_data["tf"]
 
     resp = PipelineResults(
         options=config,
         exp_title=f"{exp_name}_{dataset_id}",
-        tflist=tfs
+        tflist=tfs,
+        targets=target_list
     )
     resp.generate_clusters_file()
     print("results generated")
 
 
-def update_run_status(db_path: Path, checkpoint_dir: Path):
+
+def update_run_status(db_path: Path, checkpoint_dir: Path, check_internal: bool = True, n_jobs: int = 4):
     """Reconcile DB status with checkpoint files on disk.
     
-    - If a .pkl exists → mark as 'done'
-    - If status is 'claimed' but no .pkl → reset to 'pending' (worker died)
-    - 'failed' and 'pending' are left as-is unless a .pkl exists
+    Args:
+        db_path: Path to SQLite database
+        checkpoint_dir: Directory containing .pkl checkpoint files
+        check_internal: If True, read pkl files to check internal success/failure status
+        n_jobs: Number of parallel workers for reading pkl files (when check_internal=True)
+    
+    Behavior:
+    - If check_internal=False (fast mode):
+        - If .pkl exists - mark as 'done'
+        - If status is 'claimed' but no .pkl - reset to 'pending'
+    
+    - If check_internal=True (thorough mode):
+        - Reads each .pkl file to check internal success field
+        - If success=True - mark as 'done'
+        - If success=False - mark as 'run_failure' with error message
+        - If status is 'claimed' but no .pkl - reset to 'pending'
     """
-    # Get all genes with checkpoints on disk
-    completed_on_disk = {f.stem for f in checkpoint_dir.glob("*.pkl")}
+    import joblib
+    from joblib import Parallel, delayed
     
     conn = sqlite3.connect(db_path, timeout=30)
     conn.execute("PRAGMA journal_mode=WAL")
     
-    # Mark done if checkpoint exists
-    if completed_on_disk:
-        conn.executemany(
-            "UPDATE genes SET status='done', worker=NULL WHERE gene=? AND status != 'done'",
-            [(g,) for g in completed_on_disk]
-        )
+    # Get all pkl files
+    pkl_files = list(checkpoint_dir.glob("*.pkl"))
+    completed_on_disk = {f.stem for f in pkl_files}
     
-    # Reset claimed genes with no checkpoint (worker died)
-   # Reset claimed genes with no checkpoint (worker died)
+    if not check_internal:
+        # Fast mode: just check if pkl exists
+        print(f"Fast mode: checking {len(pkl_files)} checkpoint files...")
+        
+        if completed_on_disk:
+            conn.executemany(
+                "UPDATE genes SET status='done', worker=NULL, error=NULL WHERE gene=? AND status != 'done'",
+                [(g,) for g in completed_on_disk]
+            )
+        
+    else:
+        # Thorough mode: read pkl files in parallel to check internal success
+        def check_pkl_file(pkl_file: Path):
+            """Helper function to check a single pkl file."""
+            gene = pkl_file.stem
+            try:
+                checkpoint = joblib.load(pkl_file)
+                success = checkpoint.get("success", False)
+                error = checkpoint.get("error", "")
+                
+                if success:
+                    return ("done", gene, None)
+                else:
+                    return ("run_failure", gene, error[:500])
+                    
+            except Exception as e:
+                # If we can't read the checkpoint, treat it as failed
+                return ("run_failure", gene, f"Failed to read checkpoint: {str(e)[:400]}")
+        
+        print(f"Thorough mode: checking {len(pkl_files)} checkpoint files with {n_jobs} workers...")
+        
+        # Process pkl files in parallel
+        results = Parallel(n_jobs=n_jobs, verbose=1)(
+            delayed(check_pkl_file)(pkl_file)
+            for pkl_file in pkl_files
+        )
+        
+        # Separate into done and failed
+        done_genes = []
+        failed_genes = []
+        
+        for status, gene, error in results:
+            if status == "done":
+                done_genes.append((gene,))
+            else:
+                failed_genes.append((error, gene))
+        
+        # Update done genes
+        if done_genes:
+            conn.executemany(
+                "UPDATE genes SET status='done', worker=NULL, error=NULL WHERE gene=?",
+                done_genes
+            )
+        
+        # Update run_failure genes
+        if failed_genes:
+            conn.executemany(
+                "UPDATE genes SET status='run_failure', worker=NULL WHERE gene=?",
+                [(g,) for _, g in failed_genes]
+            )
+            conn.executemany(
+                "UPDATE genes SET error=? WHERE gene=?",
+                failed_genes
+            )
+    
+    # Reset stale claimed genes (no pkl file exists) - applies to both modes
     claimed_rows = conn.execute(
         "SELECT gene FROM genes WHERE status='claimed'"
     ).fetchall()
@@ -233,14 +321,15 @@ def update_run_status(db_path: Path, checkpoint_dir: Path):
     conn.commit()
     
     # Print summary
+    print("\nStatus summary:")
     rows = conn.execute(
-        "SELECT status, COUNT(*) FROM genes GROUP BY status"
+        "SELECT status, COUNT(*) FROM genes GROUP BY status ORDER BY status"
     ).fetchall()
-    conn.close()
     
-    print("Status after update:")
     for status, count in rows:
         print(f"  {status}: {count}")
+        
+    conn.close()
 
 
 def reset_failed(db_path: Path):
@@ -268,6 +357,7 @@ def reset_claimed(db_path: Path, worker_id: str):
     conn.close()
     print(f"reset genes claimed by '{worker_id}' to pending, total pending now: {row[0]}")
 
+
 #  ------  CLI  ------ 
 
 def main():
@@ -283,10 +373,7 @@ def main():
     res_p = subparsers.add_parser("result")
     res_p.add_argument("exp_name")
     res_p.add_argument("dataset_id")
-
-    status_p = subparsers.add_parser("update_status")
-    status_p.add_argument("exp_name")
-    status_p.add_argument("dataset_id")
+    res_p.add_argument("--n_jobs", type=int, default=8, help="number of parallel workers")
 
     reset_p = subparsers.add_parser("reset_failed")
     reset_p.add_argument("exp_name")
@@ -297,15 +384,23 @@ def main():
     rc_p.add_argument("dataset_id")
     rc_p.add_argument("worker_id")
 
+    status_p = subparsers.add_parser("update_status")
+    status_p.add_argument("exp_name")
+    status_p.add_argument("dataset_id")
+    status_p.add_argument("--read", action="store_true", help="read pkl files to check internal success/failure (slower but more accurate)")
+    status_p.add_argument("--n_jobs", type=int, default=8, help="number of parallel workers when using --read")
+
+
     args = parser.parse_args()
 
     if args.action == "run":
         run(args.exp_name, args.dataset_id, args.worker, args.batch)
     elif args.action == "result":
-        result(args.exp_name, args.dataset_id)
+        result(args.exp_name, args.dataset_id,n_jobs=args.n_jobs)
     elif args.action == "update_status":
-      paths = get_experiment_paths(args.exp_name, args.dataset_id, TOOL)
-      update_run_status(paths["db_file"], paths["temp_folder"])
+        paths = get_experiment_paths(args.exp_name, args.dataset_id, TOOL)
+        update_run_status(paths["db_file"], paths["temp_folder"], 
+                         check_internal=args.read, n_jobs=args.n_jobs)
     elif args.action == "reset_failed":
       paths = get_experiment_paths(args.exp_name, args.dataset_id, TOOL)
       reset_failed(paths["db_file"])

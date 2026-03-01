@@ -297,6 +297,8 @@ def update_run_status(db_path: Path, checkpoint_dir: Path, check_internal: bool 
         
         # Update run_failure genes
         if failed_genes:
+            print("failed genes")
+            print(failed_genes)
             conn.executemany(
                 "UPDATE genes SET status='run_failure', worker=NULL WHERE gene=?",
                 [(g,) for _, g in failed_genes]

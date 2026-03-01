@@ -79,10 +79,9 @@ new-exp: ## Create new exp file. Pass name=exp1
 exp-init: ## Initialize an experiment
 	poetry run python scripts/exp_init.py init $(name)
 
-run-coregtor: ## Run coregtor pipeline. Actions: run, result, update_status, reset_failed, reset_claimed
-	$(CONTAINER_RUNTIME) $(BIND_VOLUME) $(CONTAINER_ENV) $(COREGTOR_IMAGE) python $(SCRIPTS_DIR)/run_coregtor.py \
-		$(action) $(id) $(dataset) $(if $(filter reset_claimed,$(action)),$(worker),) $(if $(filter run,$(action)),$(if $(worker),--worker $(worker),) $(if $(batch),--batch $(batch),),)  $(if $(filter update_status,$(action)),$(if $(read),--read ,),) $(if $(n_jobs),--n_jobs $(n_jobs),) 
 
+run-coregtor: ## Run coregtor pipeline. Actions: run, result, update_status, reset_failed, reset_claimed
+	$(CONTAINER_RUNTIME) $(BIND_VOLUME) $(CONTAINER_ENV) $(COREGTOR_IMAGE) python $(SCRIPTS_DIR)/run_coregtor.py $(action) $(if $(id),--id $(id),) $(if $(dataset),--dataset $(dataset),) $(if $(worker),--worker $(worker),) $(if $(batch),--batch $(batch),) $(if $(read),--read,) $(if $(n_jobs),--n_jobs $(n_jobs),)
 
 new-analysis: ## Create new analysis file. Pass name=analysis1
 	poetry run python scripts/util_project_files.py new analysis $(name)

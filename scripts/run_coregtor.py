@@ -361,53 +361,45 @@ def reset_claimed(db_path: Path, worker_id: str):
 #  ------  CLI  ------ 
 
 def main():
+    # Parent parser for common arguments
+    parent_parser = argparse.ArgumentParser(add_help=False)
+    parent_parser.add_argument("--id", required=True, help="experiment name")
+    parent_parser.add_argument("--dataset", required=True, help="dataset id")
+    parent_parser.add_argument("--n_jobs", type=int, default=8, help="number of parallel jobs")
+    
     parser = argparse.ArgumentParser(description="Run coregtor pipeline")
     subparsers = parser.add_subparsers(dest="action", required=True)
-
-    run_p = subparsers.add_parser("run")
-    run_p.add_argument("exp_name")
-    run_p.add_argument("dataset_id")
+    
+    run_p = subparsers.add_parser("run", parents=[parent_parser])
     run_p.add_argument("--worker", default="worker_0", help="unique worker id for this job")
     run_p.add_argument("--batch", type=int, default=500, help="number of genes to claim per run")
-
-    res_p = subparsers.add_parser("result")
-    res_p.add_argument("exp_name")
-    res_p.add_argument("dataset_id")
-    res_p.add_argument("--n_jobs", type=int, default=8, help="number of parallel workers")
-
-    reset_p = subparsers.add_parser("reset_failed")
-    reset_p.add_argument("exp_name")
-    reset_p.add_argument("dataset_id")
-
-    rc_p = subparsers.add_parser("reset_claimed")
-    rc_p.add_argument("exp_name")
-    rc_p.add_argument("dataset_id")
-    rc_p.add_argument("worker_id")
-
-    status_p = subparsers.add_parser("update_status")
-    status_p.add_argument("exp_name")
-    status_p.add_argument("dataset_id")
+    
+    res_p = subparsers.add_parser("result", parents=[parent_parser])
+    
+    reset_p = subparsers.add_parser("reset_failed", parents=[parent_parser])
+    
+    rc_p = subparsers.add_parser("reset_claimed", parents=[parent_parser])
+    rc_p.add_argument("--worker", required=True, help="worker id to reset")
+    
+    status_p = subparsers.add_parser("update_status", parents=[parent_parser])
     status_p.add_argument("--read", action="store_true", help="read pkl files to check internal success/failure (slower but more accurate)")
-    status_p.add_argument("--n_jobs", type=int, default=8, help="number of parallel workers when using --read")
-
-
+    
     args = parser.parse_args()
-
+    
     if args.action == "run":
-        run(args.exp_name, args.dataset_id, args.worker, args.batch)
+        run(args.id, args.dataset, args.worker, args.batch)
     elif args.action == "result":
-        result(args.exp_name, args.dataset_id,n_jobs=args.n_jobs)
+        result(args.id, args.dataset, n_jobs=args.n_jobs)
     elif args.action == "update_status":
-        paths = get_experiment_paths(args.exp_name, args.dataset_id, TOOL)
+        paths = get_experiment_paths(args.id, args.dataset, TOOL)
         update_run_status(paths["db_file"], paths["temp_folder"], 
                          check_internal=args.read, n_jobs=args.n_jobs)
     elif args.action == "reset_failed":
-      paths = get_experiment_paths(args.exp_name, args.dataset_id, TOOL)
-      reset_failed(paths["db_file"])
+        paths = get_experiment_paths(args.id, args.dataset, TOOL)
+        reset_failed(paths["db_file"])
     elif args.action == "reset_claimed":
-      paths = get_experiment_paths(args.exp_name, args.dataset_id, TOOL)
-      reset_claimed(paths["db_file"], args.worker_id)
-
+        paths = get_experiment_paths(args.id, args.dataset, TOOL)
+        reset_claimed(paths["db_file"], args.worker)
 
 if __name__ == "__main__":
     main()

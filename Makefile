@@ -63,10 +63,10 @@ RUN = $(CONTAINER_RUNTIME) $(BIND_VOLUME) $(CONTAINER_ENV)
 .PHONY: build-coregtor build-coregnet containers datasets new-exp new-analysis analysis help
 
 build-coregtor: ## Build coregtor container
-    $(BUILD_COREGTOR)
+	$(BUILD_COREGTOR)
 
 build-coregnet: ## Build coregnet container
-    $(BUILD_COREGNET)
+	$(BUILD_COREGNET)
 
 containers: build-coregtor build-coregnet ## Build all containers
 

@@ -121,7 +121,7 @@ def run(exp_name: str, dataset_id: str, worker_id: str, batch_size: int):
         sys.exit(1)
 
     if not paths["db_file"].exists():
-        print(f"status.db not found: {paths['db']}")
+        print(f"status.db not found: {paths['db_file']}")
         print("run exp_init.py first")
         sys.exit(1)
 
@@ -239,9 +239,10 @@ def update_run_status(db_path: Path, checkpoint_dir: Path, check_internal: bool 
         gene = pkl_file.stem
         try:
             checkpoint = joblib.load(pkl_file)
-            if checkpoint.get("success", False):
+            status = checkpoint.get("success", {})
+            if status.get("success", False):
                 return ("done", gene, None)
-            return ("run_failure", gene, (checkpoint.get("error", "") or "")[:500])
+            return ("run_failure", gene, (status.get("error", "") or "")[:500])
         except Exception as e:
             return ("run_failure", gene, f"Failed to read checkpoint: {str(e)[:400]}")
 

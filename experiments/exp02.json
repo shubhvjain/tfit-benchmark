@@ -1,6 +1,6 @@
 {
   "type": "run_tool",
-  "about": "To run CoRegTor,CoRegNet on multiple bulk tissue gene expression datasets from GTEx portal with ",
+  "about": "To run CoRegTor,CoRegNet on multiple bulk tissue gene expression datasets from GTEx portal for 25 targets and 50 Transcription factors. The target were chosen to be targets in the collectri network with 20 or more sources. ",
   "tags": [],
   "rerun": false,
   "datasets": [

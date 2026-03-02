@@ -33,6 +33,12 @@ def load_exp(exp_name: str) -> dict:
 
 def load_tflist(exp: dict) -> list[str]:
     tf_cfg = exp.get("tf", {})
+    if "custom_list" in tf_cfg :
+        tf_list = tf_cfg.get("custom_list",[])
+        if len(tf_list) == 0:
+            raise ValueError("Empty custom list provided")
+        return tf_list
+
     if "custom_file_path" in tf_cfg:
         path = Path(os.path.expandvars(tf_cfg["custom_file_path"]))
         df = pd.read_csv(path)

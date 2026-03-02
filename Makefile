@@ -28,7 +28,7 @@ BIND_VOLUME = \
     -v $(EXP_OUTPUT_PATH):$(WS_OUTPUT) \
     -v $(ANALYSIS_INPUT_PATH):$(WS_RESULT_INPUT) \
     -v $(ANALYSIS_OUTPUT_PATH):$(WS_RESULT_OUTPUT)\
-    -v $(DATA_STATIC_PATH):$(WS_DATA_STATIC_PATH)\
+    -v $(DATA_STATIC_PATH):$(WS_DATA_STATIC_PATH)
 CONTAINER_ENV = \
     -e DATA_PATH=$(WS_DATA) \
     -e EXP_INPUT_PATH=$(WS_INPUT) \
@@ -38,6 +38,7 @@ CONTAINER_ENV = \
     -e ANALYSIS_INPUT_PATH=$(WS_RESULT_INPUT) \
     -e ANALYSIS_OUTPUT_PATH=$(WS_RESULT_OUTPUT)\
     -e DATA_STATIC_PATH=$(WS_DATA_STATIC_PATH)\
+    -e PYTHONPATH="/app/scripts" 
 BUILD_COREGTOR = docker build -f $(CONTAINERS_DIR)/coregtor.Dockerfile -t $(COREGTOR_IMAGE) .
 BUILD_COREGNET = docker build -f $(CONTAINERS_DIR)/coregnet.Dockerfile -t $(COREGNET_IMAGE) .
 else ifeq ($(container_app),apptainer)
@@ -52,11 +53,11 @@ BIND_VOLUME = \
     --bind $(EXP_OUTPUT_PATH):$(WS_OUTPUT) \
     --bind $(ANALYSIS_INPUT_PATH):$(WS_RESULT_INPUT) \
     --bind $(ANALYSIS_OUTPUT_PATH):$(WS_RESULT_OUTPUT)\
-    --bind $(DATA_STATIC_PATH):$(WS_DATA_STATIC_PATH)\
+    --bind $(DATA_STATIC_PATH):$(WS_DATA_STATIC_PATH)
 
     
 CONTAINER_ENV = \
-    --env DATA_PATH=$(WS_DATA),EXP_INPUT_PATH=$(WS_INPUT),EXP_TEMP_PATH=$(WS_TEMP),EXP_OUTPUT_PATH=$(WS_OUTPUT),MODE=$(mode),ANALYSIS_INPUT_PATH=$(WS_RESULT_INPUT),ANALYSIS_OUTPUT_PATH=$(WS_RESULT_OUTPUT),DATA_STATIC_PATH=$(WS_DATA_STATIC_PATH)
+    --env DATA_PATH=$(WS_DATA),EXP_INPUT_PATH=$(WS_INPUT),EXP_TEMP_PATH=$(WS_TEMP),EXP_OUTPUT_PATH=$(WS_OUTPUT),MODE=$(mode),ANALYSIS_INPUT_PATH=$(WS_RESULT_INPUT),ANALYSIS_OUTPUT_PATH=$(WS_RESULT_OUTPUT),DATA_STATIC_PATH=$(WS_DATA_STATIC_PATH),PYTHONPATH=/app/scripts
 BUILD_COREGTOR = apptainer build $(COREGTOR_IMAGE) $(CONTAINERS_DIR)/coregtor.def
 BUILD_COREGNET = apptainer build $(COREGNET_IMAGE) $(CONTAINERS_DIR)/coregnet.def
 else
@@ -88,6 +89,12 @@ exp-init: ## Initialize an experiment
 
 run-coregtor: ## Run coregtor pipeline. Actions: run, result, update_status, reset_failed, reset_claimed
 	$(CONTAINER_RUNTIME) $(BIND_VOLUME) $(CONTAINER_ENV) $(COREGTOR_IMAGE) python $(SCRIPTS_DIR)/run_coregtor.py $(action) $(if $(id),--id $(id),) $(if $(dataset),--dataset $(dataset),) $(if $(worker),--worker $(worker),) $(if $(batch),--batch $(batch),) $(if $(read),--read,) $(if $(n_jobs),--n_jobs $(n_jobs),)
+
+run-coregnet:
+	$(RUN) $(COREGNET_IMAGE) Rscript $(SCRIPTS_DIR)/coregnet_run.r $(id) $(dataset)
+
+result-coregnet:
+	$(RUN) $(COREGNET_IMAGE) python3 $(SCRIPTS_DIR)/coregnet_util.py --id $(id) --dataset $(dataset)
 
 new-analysis: ## Create new analysis file. Pass name=analysis1
 	poetry run python scripts/util_project_files.py new analysis $(name)

@@ -49,14 +49,14 @@ def load_tflist(exp: dict) -> list[str]:
 # ------ Gene selection ------
 
 def filter_top_expressed(df: pd.DataFrame, gene_list: list[str], n: int) -> list[str]:
-    available = [g for g in gene_list if g in df.columns]
+    available = gene_list # [g for g in gene_list if g in df.columns]
     sub = df[available]
     stats = pd.DataFrame({"mean": sub.mean(), "variance": sub.var()})
     return stats.sort_values(["mean", "variance"], ascending=False).head(n).index.tolist()
 
 
 def filter_non_zero(df: pd.DataFrame, gene_list: list[str], threshold: float) -> list[str]:
-    available = [g for g in gene_list if g in df.columns]
+    available = gene_list #[g for g in gene_list if g in df.columns]
     counts = (df[available] > 0).sum() / len(df)
     return counts[counts >= threshold].index.tolist()
 

@@ -12,6 +12,7 @@ WS_TEMP          = /workspace/temp
 WS_OUTPUT        = /workspace/output
 WS_RESULT_INPUT  = /workspace/result_input
 WS_RESULT_OUTPUT = /workspace/result_output
+WS_DATA_STATIC_PATH=/workspace/data_static
 
 # Container runtime config
 ifeq ($(container_app),docker)
@@ -26,7 +27,8 @@ BIND_VOLUME = \
     -v $(EXP_TEMP_PATH):$(WS_TEMP) \
     -v $(EXP_OUTPUT_PATH):$(WS_OUTPUT) \
     -v $(ANALYSIS_INPUT_PATH):$(WS_RESULT_INPUT) \
-    -v $(ANALYSIS_OUTPUT_PATH):$(WS_RESULT_OUTPUT)
+    -v $(ANALYSIS_OUTPUT_PATH):$(WS_RESULT_OUTPUT)\
+    -v $(DATA_STATIC_PATH):$(WS_DATA_STATIC_PATH)\
 CONTAINER_ENV = \
     -e DATA_PATH=$(WS_DATA) \
     -e EXP_INPUT_PATH=$(WS_INPUT) \
@@ -34,7 +36,8 @@ CONTAINER_ENV = \
     -e EXP_OUTPUT_PATH=$(WS_OUTPUT) \
     -e MODE=$(mode) \
     -e ANALYSIS_INPUT_PATH=$(WS_RESULT_INPUT) \
-    -e ANALYSIS_OUTPUT_PATH=$(WS_RESULT_OUTPUT)
+    -e ANALYSIS_OUTPUT_PATH=$(WS_RESULT_OUTPUT)\
+    -e DATA_STATIC_PATH=$(WS_DATA_STATIC_PATH)\
 BUILD_COREGTOR = docker build -f $(CONTAINERS_DIR)/coregtor.Dockerfile -t $(COREGTOR_IMAGE) .
 BUILD_COREGNET = docker build -f $(CONTAINERS_DIR)/coregnet.Dockerfile -t $(COREGNET_IMAGE) .
 else ifeq ($(container_app),apptainer)
@@ -48,9 +51,12 @@ BIND_VOLUME = \
     --bind $(EXP_TEMP_PATH):$(WS_TEMP) \
     --bind $(EXP_OUTPUT_PATH):$(WS_OUTPUT) \
     --bind $(ANALYSIS_INPUT_PATH):$(WS_RESULT_INPUT) \
-    --bind $(ANALYSIS_OUTPUT_PATH):$(WS_RESULT_OUTPUT)
+    --bind $(ANALYSIS_OUTPUT_PATH):$(WS_RESULT_OUTPUT)\
+    --bind $(DATA_STATIC_PATH):$(WS_DATA_STATIC_PATH)\
+
+    
 CONTAINER_ENV = \
-    --env DATA_PATH=$(WS_DATA),EXP_INPUT_PATH=$(WS_INPUT),EXP_TEMP_PATH=$(WS_TEMP),EXP_OUTPUT_PATH=$(WS_OUTPUT),MODE=$(mode),ANALYSIS_INPUT_PATH=$(WS_RESULT_INPUT),ANALYSIS_OUTPUT_PATH=$(WS_RESULT_OUTPUT)
+    --env DATA_PATH=$(WS_DATA),EXP_INPUT_PATH=$(WS_INPUT),EXP_TEMP_PATH=$(WS_TEMP),EXP_OUTPUT_PATH=$(WS_OUTPUT),MODE=$(mode),ANALYSIS_INPUT_PATH=$(WS_RESULT_INPUT),ANALYSIS_OUTPUT_PATH=$(WS_RESULT_OUTPUT),DATA_STATIC_PATH=$(WS_DATA_STATIC_PATH)
 BUILD_COREGTOR = apptainer build $(COREGTOR_IMAGE) $(CONTAINERS_DIR)/coregtor.def
 BUILD_COREGNET = apptainer build $(COREGNET_IMAGE) $(CONTAINERS_DIR)/coregnet.def
 else
@@ -88,6 +94,12 @@ new-analysis: ## Create new analysis file. Pass name=analysis1
 
 analysis: ## Run an analysis file. Pass id=<id>
 	poetry run python scripts/analysis.py run $(id)
+
+nb:
+	poetry run jupyter lab
+
+pr:
+	poetry run $(cmd)
 
 help: ## Show help
 	@echo "Available targets:"

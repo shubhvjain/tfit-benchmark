@@ -1,0 +1,169 @@
+{
+  "type": "run_tool",
+  "about": "To run CoRegTor,CoRegNet on multiple bulk tissue gene expression datasets from GTEx portal with ",
+  "tags": [],
+  "rerun": false,
+  "datasets": [
+    "amygdala",
+    "bladder",
+    "blood",
+    "cortex-ba9",
+    "heart_left_ventricle",
+    "heart_atrial_appendage",
+    "hypothalamus",
+    "kidney_cortex",
+    "lung",
+    "muscle_skeletal",
+    "thyroid"
+  ],
+  "target": {
+    "type": "custom",
+    "top_expressed_n": 25,
+    "items": [
+      "ACTA2",
+      "ACTB",
+      "AKT1",
+      "APOE",
+      "APP",
+      "BCL2L1",
+      "BGLAP",
+      "BMI1",
+      "CARM1",
+      "CASP3",
+      "CCND3",
+      "CD14",
+      "CD44",
+      "CDK4",
+      "CDKN1A",
+      "CDKN1B",
+      "CDKN1C",
+      "CLU",
+      "CREBBP",
+      "CRYAB",
+      "CSF1",
+      "CSF1R",
+      "CXCR4",
+      "DUSP1",
+      "EBP",
+      "ERBB2",
+      "FASN",
+      "FGFR1",
+      "FN1",
+      "GADD45B",
+      "GCLC",
+      "GSTP1",
+      "HBA2",
+      "HBB",
+      "HLA-DRB1",
+      "HLA-E",
+      "HMOX1",
+      "HSP90AA1",
+      "HSPA1A",
+      "HSPA4",
+      "ID3",
+      "IGF1R",
+      "ITGB1",
+      "KAT2B",
+      "KDM1A",
+      "KRAS",
+      "LDLR",
+      "MAPK14",
+      "MAPK8",
+      "MAT2A",
+      "MCL1",
+      "MT1A",
+      "NDRG1",
+      "NFKBIA",
+      "NOTCH1",
+      "OGA",
+      "PCNA",
+      "PDK4",
+      "PDLIM7",
+      "PER1",
+      "PIK3R1",
+      "PKD1",
+      "POLR2F",
+      "PRKACA",
+      "PSEN1",
+      "PTEN",
+      "RASSF1",
+      "RBL2",
+      "RHOA",
+      "SCARB1",
+      "SIRT1",
+      "SMARCA4",
+      "SOCS3",
+      "SOD2",
+      "SPARC",
+      "SQSTM1",
+      "STMN1",
+      "SUMO1",
+      "TAGLN",
+      "TGFB1",
+      "TGFBR2",
+      "TIMP1",
+      "TIMP3",
+      "TKT",
+      "TNFRSF10B",
+      "TNFSF10",
+      "TTF1",
+      "TXN",
+      "VEGFA",
+      "VIM"
+    ]
+  },
+  "tf": {
+    "top_expressed_n": 50
+  },
+  "tools": ["coregtor","coregnet"],
+  "tool_run": {
+    "coregtor": {
+      "create_model": {
+        "model": "rf",
+        "model_options": {
+          "max_depth": 5,
+          "n_jobs": -1,
+          "n_estimators": 1000,
+          "random_state": 120
+        }
+      },
+      "tree_paths": {},
+      "create_context": {
+        "method": "tree_paths"
+      },
+      "transform_context": [
+        {
+          "id": "default",
+          "method": "gene_frequency",
+          "normalize": false,
+          "min_frequency": 1
+        }
+      ],
+      "compare_context": [
+        {
+          "id": "default",
+          "method": "cosine",
+          "transformation_id": "default",
+          "convert_to_distance": false
+        }
+      ]
+    },
+    "coregnet":{
+      "discretization_threshold": 0.05
+    }
+  },
+  "tool_result": {
+    "coregtor": {
+      "clustering": [
+        {
+          "id": "default",
+          "matrix_id": "default",
+          "method": "hierarchical_clustering",
+          "method_options": {
+            "auto_threshold": "inconsistency"
+          }
+        }
+      ]
+    }
+  }
+}

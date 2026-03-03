@@ -38,6 +38,25 @@ def start_tool(exp_name,dataset_id,rerun=False):
     return input_data, dataset
 
 
+# def get_data(input_details: dict, dataset: pd.DataFrame):
+#     """
+#     Prepare expression matrix for CoRegNet.
+#     Returns log2(x+1) transformed matrix (genes x samples) as numpy array,
+#     plus tf and target gene lists.
+#     """
+#     tf_vec     = input_details["tf"]
+#     target_vec = input_details["targets"]
+#     genes      = tf_vec + target_vec
+
+#     subset = dataset[genes]                      # samples x genes
+#     matrix = np.log2(subset.values + 1)         # log2 transform
+#     matrix = matrix.T                            # genes x samples
+
+#     # Return as DataFrame so R gets row/col names automatically
+#     result = pd.DataFrame(matrix, index=genes, columns=dataset.index)
+
+#     return result, tf_vec, target_vec
+
 def get_data(input_details: dict, dataset: pd.DataFrame):
     """
     Prepare expression matrix for CoRegNet.
@@ -46,18 +65,23 @@ def get_data(input_details: dict, dataset: pd.DataFrame):
     """
     tf_vec     = input_details["tf"]
     target_vec = input_details["targets"]
-    genes      = tf_vec + target_vec
-
+    
+    # Get unique genes while preserving order
+    genes = []
+    seen = set()
+    for gene in tf_vec + target_vec:
+        if gene not in seen:
+            genes.append(gene)
+            seen.add(gene)
+    
     subset = dataset[genes]                      # samples x genes
     matrix = np.log2(subset.values + 1)         # log2 transform
     matrix = matrix.T                            # genes x samples
-
+    
     # Return as DataFrame so R gets row/col names automatically
     result = pd.DataFrame(matrix, index=genes, columns=dataset.index)
-
+    
     return result, tf_vec, target_vec
-
-
 
 
 

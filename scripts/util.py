@@ -5,6 +5,11 @@ import os
 import json
 import sqlite3
 
+TOOLS = {
+    "coregtor": {},
+    "coregnet":{}
+
+}
 
 def get_exp_path() -> Path:
     p = os.getenv("EXP_INPUT_PATH")

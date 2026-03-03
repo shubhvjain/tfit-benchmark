@@ -80,11 +80,17 @@ containers: build-coregtor build-coregnet ## Build all containers
 datasets: ## Download all datasets required
 	poetry run python scripts/datasets.py --all
 
+tfitpy-setup: ## Download all datasets required
+	poetry run python scripts/tfitpy_setup.py
+
 new-exp: ## Create new exp file. Pass name=exp1
 	poetry run python scripts/util_project_files.py new exp $(name)
 
 exp-init: ## Initialize an experiment
 	poetry run python scripts/exp_init.py init $(name)
+
+exp-result: ## Generate results for an exp
+	poetry run python scripts/exp_results.py --id $(id)  --name $(name) 
 
 
 run-coregtor: ## Run coregtor pipeline. Actions: run, result, update_status, reset_failed, reset_claimed

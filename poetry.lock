@@ -675,6 +675,30 @@ test = ["Pillow", "contourpy[test-no-images]", "matplotlib"]
 test-no-images = ["pytest", "pytest-cov", "pytest-rerunfailures", "pytest-xdist", "wurlitzer"]
 
 [[package]]
+name = "coregtor"
+version = "0.2.13"
+description = "A tool to predict transcription co-regulators for a gene from gene expression data using random forest methods"
+optional = false
+python-versions = ">=3.11"
+groups = ["main"]
+markers = "python_full_version != \"3.14.1\""
+files = [
+    {file = "coregtor-0.2.13-py3-none-any.whl", hash = "sha256:14388119cf3e7032b5a779eb664c17bd4005da34f4ccf014804015e10195016d"},
+    {file = "coregtor-0.2.13.tar.gz", hash = "sha256:173aaaa7c63b628615fd19d2ce4aa9652998df3b8c48a23e1167534d5d9a5b65"},
+]
+
+[package.dependencies]
+decoupler = ">=2.1.1,<3.0.0"
+joblib = ">=1.5.3,<2.0.0"
+matplotlib = ">=3.10.7,<4.0.0"
+networkx = ">=3.5,<4.0"
+numpy = ">=2.3.4,<3.0.0"
+pandas = ">=2.3.3,<3.0.0"
+psutil = ">=7.1.3,<8.0.0"
+scikit-learn = ">=1.7.2,<2.0.0"
+seaborn = ">=0.13.2,<0.14.0"
+
+[[package]]
 name = "cramjam"
 version = "2.11.0"
 description = "Thin Python bindings to de/compression algorithms in Rust"
@@ -5103,4 +5127,4 @@ test = ["coverage (>=7.10)", "hypothesis", "mypy", "numpydoc", "packaging", "pyt
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.11"
-content-hash = "53d8914a70cd80502bf721999e866d703a589bd6abe24f178624f376f8be1fbe"
+content-hash = "576fc394a2909137796a7bd00e7baafef76773ad012d776142cd2f33d41137a8"

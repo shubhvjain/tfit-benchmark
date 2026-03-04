@@ -19,7 +19,8 @@ dependencies = [
     "jupyterlab (>=4.5.5,<5.0.0)",
     "decoupler (>=2.1.4,<3.0.0)",
     "omnipath (>=1.0.12,<2.0.0)",
-    "gprofiler-official (>=1.0.0,<2.0.0)"
+    "gprofiler-official (>=1.0.0,<2.0.0)",
+    "coregtor (>=0.2.13,<0.3.0) ; python_version >= \"3.11\" and python_full_version != \"3.14.1\" and python_version < \"4.0\""
 ]
 
 

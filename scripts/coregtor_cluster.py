@@ -142,13 +142,81 @@ def _format_clusters_df(
 
     return pd.DataFrame(rows).sort_values('silhouette_score', ascending=False).reset_index(drop=True)
 
+def _compute_threshold_for_min_cluster_size(
+    sim_matrix: pd.DataFrame,
+    min_cluster_size: int,
+    linkage1: str,
+    optimization: str = 'first'
+) -> Optional[float]:
+    """Find distance threshold ensuring at least one cluster has >= min_cluster_size.
+    
+    Args:
+        sim_matrix: Similarity matrix DataFrame
+        min_cluster_size: Minimum size for at least one cluster
+        linkage1: Linkage method ('average', 'complete', etc.)
+        optimization: Strategy for choosing among valid thresholds:
+            - 'first': First threshold that satisfies constraint (largest clusters)
+            - 'silhouette': Maximize silhouette score among valid thresholds
+            - 'fewest': Minimize number of clusters (most aggressive merging)
+    
+    Returns:
+        Optimal distance threshold, or None if constraint cannot be satisfied
+    """
+    from scipy.cluster.hierarchy import fcluster
+    
+    dist_matrix = _ensure_distance_matrix(sim_matrix)
+    condensed = squareform(dist_matrix)
+    Z = linkage(condensed, method=linkage1)
+    
+    distances = Z[:, 2]  # Merge heights
+    
+    # Try thresholds from min to max
+    valid_thresholds = []
+    valid_clusters = []
+    valid_scores = []
+    
+    n_samples = len(sim_matrix)
+    test_thresholds = np.linspace(distances.min(), distances.max(), 100)
+    
+    for threshold in test_thresholds:
+        clusters = fcluster(Z, threshold, criterion='distance')
+        unique, counts = np.unique(clusters, return_counts=True)
+        
+        # Check if at least one cluster meets size requirement
+        if np.any(counts >= min_cluster_size):
+            valid_thresholds.append(threshold)
+            valid_clusters.append(clusters)
+            
+            # Calculate score for optimization
+            if optimization == 'silhouette':
+                n_unique = len(unique)
+                if 2 <= n_unique <= n_samples - 1:
+                    from sklearn.metrics import silhouette_score
+                    score = silhouette_score(dist_matrix, clusters, metric='precomputed')
+                else:
+                    score = -1.0
+                valid_scores.append(score)
+            elif optimization == 'fewest':
+                valid_scores.append(-len(unique))  # Negative for minimization
+    
+    if not valid_thresholds:
+        return None  # Cannot satisfy constraint
+    
+    # Choose optimal threshold based on strategy
+    if optimization == 'first':
+        return valid_thresholds[0]
+    elif optimization in ['silhouette', 'fewest']:
+        best_idx = np.argmax(valid_scores)
+        return valid_thresholds[best_idx]
+    else:
+        raise ValueError(f"Unknown optimization: {optimization}")
 
 def hierarchical_clustering(
     sim_matrix: pd.DataFrame,
     target_gene: str,
     method_options: Dict[str, Any],
     **kwargs
-) -> Dict[str, Any]:
+) -> Tuple[Optional[Any], pd.DataFrame]:
     """Perform hierarchical clustering with fixed parameters.
 
     Args:
@@ -156,31 +224,30 @@ def hierarchical_clustering(
       target_gene: Target gene name (must be in sim_matrix.index).
       method_options: Dict with:
         - 'n_clusters': int (exact number of clusters) OR 
-        - 'distance_threshold': float (cut dendrogram at distance)
+        - 'distance_threshold': float (cut dendrogram at distance) OR
+        - 'auto_threshold': str ['inconsistency', 'elbow', 'percentile'] OR
+        - 'min_cluster_size': int (ensure at least one cluster has this many genes)
         - 'linkage': str ['average', 'complete', 'ward', 'single'] (default: 'average')
-        - 'min_module_size': int (default: 2),
-        - 'auto_threshold' : to automatically determine the distance threshold value, [inconsistency,elbow,percentile]
+        - 'min_module_size': int (default: 2) - filter out small clusters from results
+        - 'cluster_size_optimization': str ['first', 'silhouette', 'fewest'] 
+            (only used with min_cluster_size, default: 'first')
       **kwargs: Ignored.
 
     Raises:
-      CoRegTorError: If neither n_clusters nor distance_threshold specified,
-        or both specified together.
+      CoRegTorError: If multiple conflicting clustering parameters specified.
 
     Returns:
-      Dict:
-        - 'model': Fitted AgglomerativeClustering instance
-        - 'clusters_df': pd.DataFrame with columns 
-            ['target_gene', 'cluster_id', 'cluster_uid', 'gene', 'score']
-            (gene-level silhouette scores, sorted by cluster_id then score DESC)
-        - 'best_cluster': Dict {'genes': list[str], 'score': float, 
-            'cluster_uid': str, 'n_genes': int} (highest avg silhouette cluster)
-        - 'methodology': str ("method=hierarchical_clustering&n_clusters=5&...")
+      Tuple of (model, clusters_df)
     """
     n_clusters = method_options.get('n_clusters', None)
     distance_threshold = method_options.get('distance_threshold', None)
+    auto_threshold = method_options.get('auto_threshold', None)
+    min_cluster_size = method_options.get('min_cluster_size', None)
     linkage = method_options.get('linkage', 'average')
     min_module_size = method_options.get('min_module_size', 2)
+    cluster_size_optimization = method_options.get('cluster_size_optimization', 'first')
 
+    # Handle edge case: very small matrices
     if sim_matrix.shape[0] <= 3:
         gene_names = sim_matrix.index.astype(str).tolist()
         single_row = pd.DataFrame([{
@@ -189,41 +256,64 @@ def hierarchical_clustering(
             'sources': ';'.join(gene_names),
             'n_sources': len(gene_names),
             'n_percent': 100.0,
-            'silhouette_score': 0.0,  # undefined for single cluster
+            'silhouette_score': 0.0,
         }])
         return None, single_row
 
-    auto_threshold = method_options.get('auto_threshold', None)
+    # Count how many clustering methods specified
+    methods_specified = sum([
+        n_clusters is not None,
+        distance_threshold is not None,
+        auto_threshold is not None,
+        min_cluster_size is not None
+    ])
+
+    if methods_specified == 0:
+        raise CoRegTorError(
+            "Must specify one of: 'n_clusters', 'distance_threshold', "
+            "'auto_threshold', or 'min_cluster_size'"
+        )
+    
+    if methods_specified > 1:
+        raise CoRegTorError(
+            "Cannot specify multiple clustering methods. Choose only one of: "
+            "'n_clusters', 'distance_threshold', 'auto_threshold', or 'min_cluster_size'"
+        )
+
+    # Compute distance_threshold based on the specified method
     if auto_threshold:
-        if n_clusters or distance_threshold:
-            raise CoRegTorError(
-                "Cannot mix auto_threshold with n_clusters/distance_threshold")
         distance_threshold = _compute_auto_threshold(
-            sim_matrix, auto_threshold, linkage)
+            sim_matrix, auto_threshold, linkage
+        )
+    elif min_cluster_size:
+        distance_threshold = _compute_threshold_for_min_cluster_size(
+            sim_matrix, min_cluster_size, linkage, cluster_size_optimization
+        )
+        if distance_threshold is None:
+            raise CoRegTorError(
+                f"Cannot find threshold satisfying min_cluster_size={min_cluster_size}. "
+                f"Maximum possible cluster size is {len(sim_matrix)}."
+            )
 
-    if n_clusters is None and distance_threshold is None:
-        raise CoRegTorError(
-            "Must specify 'n_clusters' or 'distance_threshold'")
-    if n_clusters is not None and distance_threshold is not None:
-        raise CoRegTorError(
-            "Cannot specify both  n_clusters and  distance_threshold")
-
+    # Perform clustering
     dist_matrix = _ensure_distance_matrix(sim_matrix)
     params = {'metric': 'precomputed', 'linkage': linkage}
-    params['n_clusters'] = n_clusters
-    params['distance_threshold'] = distance_threshold
+    
+    if n_clusters is not None:
+        params['n_clusters'] = n_clusters
+        params['distance_threshold'] = None
+    else:
+        params['n_clusters'] = None
+        params['distance_threshold'] = distance_threshold
 
     model = AgglomerativeClustering(**params)
     labels = model.fit_predict(dist_matrix)
 
+    # Format results
     clusters_df = _format_clusters_df(
-        sim_matrix, labels, target_gene, min_module_size)
+        sim_matrix, labels, target_gene, min_module_size
+    )
 
-    params.update({
-        "auto_threshold": auto_threshold,
-        'min_module_size': min_module_size,
-        'scoring_index': 'silhouette',
-    })
     return model, clusters_df
 
 # def validation_index(
@@ -334,8 +424,8 @@ METHOD_REGISTRY = {
 def identify_coregulators(
     sim_matrix: pd.DataFrame,
     target_gene: str,
-    method: str,
-    method_options: Dict[str, Any],
+    method: str = "hierarchical_clustering",
+    method_options: Dict[str, Any] = {},
     **kwargs
 ) -> Dict[str, Any]:
     """Identify co-regulatory modules from gene similarity matrix.

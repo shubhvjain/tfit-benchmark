@@ -259,6 +259,91 @@
           }
         }
       ]
+    },
+    {
+      "name": "tool_plots_all",
+      "type": "tool_comparison_plots_combined",
+      "datasets": [
+        {
+          "name": "kidney_cortex",
+          "tools": {
+            "coregnet": "results",
+            "coregtor": "result_n_five"
+          }
+        },
+        {
+          "name": "heart_atrial_appendage",
+          "tools": {
+            "coregnet": "results",
+            "coregtor": "result_n_five"
+          }
+        },
+
+        {
+          "name": "amygdala",
+          "tools": {
+            "coregnet": "results",
+            "coregtor": "result_n_five"
+          }
+        },
+        {
+          "name": "bladder",
+          "tools": {
+            "coregnet": "results",
+            "coregtor": "result_n_five"
+          }
+        },
+        {
+          "name": "blood",
+          "tools": {
+            "coregnet": "results",
+            "coregtor": "result_n_five"
+          }
+        },
+        {
+          "name": "thyroid",
+          "tools": {
+            "coregnet": "results",
+            "coregtor": "result_n_five"
+          }
+        },
+        {
+          "name": "lung",
+          "tools": {
+            "coregnet": "results",
+            "coregtor": "result_n_five"
+          }
+        },
+
+        {
+          "name": "cortex-ba9",
+          "tools": {
+            "coregnet": "results",
+            "coregtor": "result_n_five"
+          }
+        },
+        {
+          "name": "hypothalamus",
+          "tools": {
+            "coregnet": "results",
+            "coregtor": "result_n_five"
+          }
+        },
+        {
+          "name": "muscle_skeletal",
+          "tools": {
+            "coregnet": "results",
+            "coregtor": "result_n_five"
+          }
+        },
+        {
+          "name": "heart_left_ventricle",
+          "tools": {
+            "coregnet": "results",
+            "coregtor": "result_n_five"
+          }
+        }
+      ]
     }
   ]
 }

@@ -15,6 +15,8 @@ import seaborn as sns
 
 import pandas as pd
 import matplotlib.pyplot as plt
+import matplotlib.ticker as ticker
+
 import numpy as np
 from io import BytesIO
 
@@ -23,17 +25,51 @@ from tfitpy import compute_indices
 from util import TOOLS,  get_exp_path,get_temp_path,get_output_path,get_data_path,get_dataset
 
 
+INDICES_LIST = ["goa_lin_similarity","goa_resnik_similarity","goa_jc_similarity","shortest_PPI_path_score_hippie","shortest_PPI_path_score_stringdb","shortest_PPI_path_score_biogrid","shared_PPI_partners_score_hippie","shared_PPI_partners_score_stringdb","shared_PPI_partners_score_biogrid","grn_collectri"]
+
 INDICES = {
     "goa_lin_similarity": {
-        "title": "A",
+        "title": "GO Similarity (Lin)",
         "plot":"box"
     },
     "goa_resnik_similarity": {
-        "title": "B",
+        "title": "GO Similarity (Resnik)",
         "plot":"box"
     },
     "goa_jc_similarity": {
-        "title": "C",
+        "title": "GO Similarity (JC)",
+        "plot":"box"
+    },
+    "shortest_PPI_path_score_hippie": {
+        "title": "PPI Shortest Path (Hippie)",
+        "plot":"box"
+    },
+     "shortest_PPI_path_score_stringdb": {
+        "title": "PPI Shortest Path (StringDB)",
+        "plot":"box"
+    },
+      "shortest_PPI_path_score_biogrid": {
+        "title": "PPI Shortest Path (Biogrid)",
+        "plot":"box"
+    },
+      "shared_PPI_partners_score_hippie": {
+        "title": "PPI Source Partners (Hippie)",
+        "plot":"box"
+    },
+      "shared_PPI_partners_score_stringdb": {
+        "title": "PPI Source Partners (StringDB)",
+        "plot":"box"
+    },
+    "shared_PPI_partners_score_biogrid": {
+        "title":"PPI Source Partners (Biogrid)",
+        "plot":"box"
+    },
+    "grn_collectri_precision": {
+        "title":"GRN Precision (Collectri)",
+        "plot":"box"
+    },
+    "grn_collectri_recall": {
+        "title":"GRN Recall (Collectri)",
         "plot":"box"
     },
     # "grn_precision_recall_collectri": {
@@ -44,31 +80,44 @@ INDICES = {
     #     "title": "E",
     #     "plot":"none"
     # },
-    "shortest_PPI_path_score_hippie": {
-        "title": "F",
-        "plot":"box"
-    },
-     "shortest_PPI_path_score_stringdb": {
-        "title": "G",
-        "plot":"box"
-    },
-      "shortest_PPI_path_score_biogrid": {
-        "title": "H",
-        "plot":"box"
-    },
-      "shared_PPI_partners_score_hippie": {
-        "title": "I",
-        "plot":"box"
-    },
-      "shared_PPI_partners_score_stringdb": {
-        "title": "J",
-        "plot":"box"
-    },
-    "shared_PPI_partners_score_biogrid": {
-        "title": "K",
-        "plot":"box"
-    }
 }
+
+# ------------------------------------------
+# Publication style constants
+# ------------------------------------------
+FONT_SIZE_LABEL   = 10    # axis labels
+FONT_SIZE_TICK    = 9  # tick labels
+FONT_SIZE_PANEL   = 14    # panel letter  (A), (B) …
+FONT_Y_LABEL = 12
+# Seaborn palette – muted, grey-friendly, print-safe
+_PALETTE = ["#058ED9","#f4ebd9", "#483d3f",  "#a39a92", "#77685d"]
+
+
+def _apply_base_style(ax):
+    """Strip chart junk; minimal publication look."""
+    ax.spines["top"].set_visible(False)
+    ax.spines["right"].set_visible(False)
+    ax.spines["left"].set_linewidth(0.6)
+    ax.spines["bottom"].set_linewidth(0.6)
+    ax.tick_params(axis="both", which="major", labelsize=FONT_SIZE_TICK,
+                   length=2, width=0.5, pad=1)
+    ax.grid(axis="y", color="0.85", linewidth=0.4, linestyle="--", zorder=0)
+    ax.set_axisbelow(True)
+
+
+def _pretty_label(index_name: str) -> str:
+    """Turn snake_case index name into a short readable y-label."""
+    # Strip trailing database suffixes for brevity
+    for suffix in ("_hippie", "_stringdb", "_biogrid", "_collectri"):
+        if index_name.endswith(suffix):
+            index_name = index_name[: -len(suffix)]
+            break
+    return index_name.replace("_", " ").title()
+
+
+# ----------------------
+# Data preparation
+# ---------------------
 
 def prepare_combined_dataframe(tools_data):
     """Prepare combined dataframe with common targets."""
@@ -93,145 +142,146 @@ def prepare_combined_dataframe(tools_data):
     
     return final_df, common_targets
 
+# -----------------------
+# Single-panel drawing
+# -----------------------
 
-def create_index_subplot(ax, final_df, tools_data, index_name, plot_type, panel_label):
+def create_index_subplot(ax, final_df, tools_data, index_name, plot_type, panel_label, y_label=None):
     """
-    Create a subplot for a single index with publication-ready styling.
-    
-    Parameters:
-    -----------
-    ax : matplotlib axis
-        The axis object to plot on
-    final_df : DataFrame
-        Combined dataframe with all tools data
-    tools_data : dict
-        Dictionary of tools data
-    index_name : str
-        Name of the index/column to plot
-    plot_type : str
-        Type of plot ('box', 'histogram', 'line', etc.)
-    panel_label : str
-        Label for the panel (e.g., 'A', 'B', 'C')
+    Draw one subplot panel using seaborn for publication-quality output.
+
+    Parameters
+    ----------
+    ax          : matplotlib Axes
+    final_df    : combined DataFrame (all tools, common targets)
+    tools_data  : dict  {tool_name: (df, meta_dict)}
+    index_name  : str   column to visualise
+    plot_type   : str   'box' | 'histogram' | 'line' | 'none'
+    panel_label : str   e.g. 'A', 'B', …
     """
+
+    # Keep original keys for filtering
+    tool_keys = list(tools_data.keys())
+    # Create title mapping and order
+    tool_order = [TOOLS[key]["title"] for key in tool_keys]
     
-    if plot_type == 'box':
-        # For each tool, find the row with highest index score per target
-        tool_max_data = []
+    # ── box 
+    if plot_type == "box":
+        # Per target keep only the row with the highest value for this index
+        rows = []
         
-        for tool_name in tools_data.keys():
-            tool_df = final_df[final_df['plot_tool'] == tool_name]
-            
-            # For each target, find row with highest value for this index
-            if len(tool_df) > 0 and index_name in tool_df.columns:
-                max_rows = tool_df.loc[tool_df.groupby('target')[index_name].idxmax()]
-                
-                tool_max_data.append({
-                    'tool': tool_name,
-                    'values': max_rows[index_name].values
-                })
-        
-        if not tool_max_data:
-            ax.text(0.5, 0.5, f'No data for {index_name}', 
-                   ha='center', va='center', fontsize=8, color='gray')
-            ax.set_xticks([])
-            ax.set_yticks([])
+        for tool_key in tool_keys:  # Use original keys here
+            sub = final_df[final_df["plot_tool"] == tool_key]
+            if sub.empty or index_name not in sub.columns:
+                continue
+            best = sub.loc[sub.groupby("target")[index_name].idxmax()]
+            rows.append(best[["plot_tool", index_name]])
+
+        if not rows:
+            ax.text(0.5, 0.5, "no data", ha="center", va="center",
+                    fontsize=FONT_SIZE_TICK, color="0.5", transform=ax.transAxes)
+            ax.set_visible(True)
             return
+
+        plot_df = pd.concat(rows, ignore_index=True)
+        # NOW map to titles - after filtering with original keys
+        plot_df["plot_tool"] = plot_df["plot_tool"].map(lambda x: TOOLS[x]["title"])
         
-        # Prepare data for box plot
-        box_data = [item['values'] for item in tool_max_data]
-        labels = [item['tool'] for item in tool_max_data]
-        
-        # Create box plot with publication styling
-        bp = ax.boxplot(box_data, labels=labels, patch_artist=True,
-                        widths=0.6,
-                        boxprops=dict(linewidth=1.2),
-                        whiskerprops=dict(linewidth=1.2),
-                        capprops=dict(linewidth=1.2),
-                        medianprops=dict(color='red', linewidth=1.5))
-        
-        # Customize colors - use publication-friendly palette
-        colors = ['#E8F4F8', '#D4E9F7', '#B8D8EB', '#9AC7E0', '#7CB6D4']
-        for patch, color in zip(bp['boxes'], colors[:len(bp['boxes'])]):
-            patch.set_facecolor(color)
-            patch.set_edgecolor('black')
-        
-        ax.set_ylabel(index_name.replace('_', ' ').title(), fontsize=6, fontweight='normal')
-        ax.tick_params(axis='both', labelsize=7)
-        ax.tick_params(axis='x', rotation=45)
-        ax.spines['top'].set_visible(False)
-        ax.spines['right'].set_visible(False)
-        ax.spines['left'].set_linewidth(1.0)
-        ax.spines['bottom'].set_linewidth(1.0)
-        
-    elif plot_type == 'histogram':
-        # Create histogram for each tool
-        n_tools = len(tools_data)
-        # Publication-friendly colors (grayscale-friendly)
-        colors = ['#4472C4', '#70AD47', '#FFC000', '#C00000', '#7030A0']
-        
-        for idx, tool_name in enumerate(tools_data.keys()):
-            tool_df = final_df[final_df['plot_tool'] == tool_name]
-            
-            if len(tool_df) > 0 and index_name in tool_df.columns:
-                ax.hist(tool_df[index_name], bins=8, alpha=0.6, 
-                       label=tool_name, color=colors[idx % len(colors)], 
-                       edgecolor='black', linewidth=0.8)
-        
-        ax.set_xlabel(index_name.replace('_', ' ').title(), fontsize=6, fontweight='normal')
-        ax.set_ylabel('Frequency', fontsize=6, fontweight='normal')
-        ax.legend(fontsize=6, frameon=False, loc='best')
-        ax.tick_params(axis='both', labelsize=7)
-        ax.spines['top'].set_visible(False)
-        ax.spines['right'].set_visible(False)
-        ax.spines['left'].set_linewidth(1.0)
-        ax.spines['bottom'].set_linewidth(1.0)
-    
-    elif plot_type == 'line':
-        # Line plot implementation
-        colors = ['#4472C4', '#70AD47', '#FFC000', '#C00000', '#7030A0']
-        
-        for idx, tool_name in enumerate(tools_data.keys()):
-            tool_df = final_df[final_df['plot_tool'] == tool_name]
-            
-            if len(tool_df) > 0 and index_name in tool_df.columns:
-                # Group by target and plot
-                grouped = tool_df.groupby('target')[index_name].mean()
-                ax.plot(grouped.index, grouped.values, 
-                       marker='o', label=tool_name, 
-                       color=colors[idx % len(colors)], linewidth=1.5)
-        
-        ax.set_xlabel('Target', fontsize=8, fontweight='normal')
-        ax.set_ylabel(index_name.replace('_', ' ').title(), fontsize=8, fontweight='normal')
-        ax.legend(fontsize=6, frameon=False, loc='best')
-        ax.tick_params(axis='both', labelsize=7)
-        ax.spines['top'].set_visible(False)
-        ax.spines['right'].set_visible(False)
-        ax.spines['left'].set_linewidth(1.0)
-        ax.spines['bottom'].set_linewidth(1.0)
-        
-    elif plot_type == 'none':
-        # Hide the subplot for 'none' type
+        #print(plot_df)
+        sns.boxplot(
+            data=plot_df,
+            x="plot_tool",
+            legend=False, 
+            hue="plot_tool", 
+            y=index_name,
+            order=tool_order,  # This now matches the mapped titles
+            palette=_PALETTE[: len(tool_order)],
+            width=0.50,
+            linewidth=0.6,
+            flierprops=dict(
+                marker="o",
+                markerfacecolor="0.4",
+                markeredgewidth=0,
+                markersize=1.5,
+                alpha=0.5,
+            ),
+            whiskerprops=dict(linewidth=0.7),
+            capprops=dict(linewidth=0.7),
+            ax=ax,
+        )
+
+        # ax.set_xlabel("")
+        # # print(y_label)
+        # ax.set_ylabel(y_label or _pretty_label(index_name), fontsize=FONT_Y_LABEL,
+        #               labelpad=2, fontweight="normal")
+        # ax.tick_params(axis="x", labelsize=FONT_SIZE_TICK)
+        # # Trim x tick labels if long
+        # new_labels = []
+        # for lbl in ax.get_xticklabels():
+        #     t = lbl.get_text()
+        #     new_labels.append(t[:12] if len(t) > 12 else t)
+        # ax.set_xticklabels(new_labels, ha="center")
+
+        # # Reduce y-tick density
+        # ax.yaxis.set_major_locator(ticker.MaxNLocator(nbins=4, prune="both"))
+        ax.set_xlabel("")
+        ax.set_ylabel(y_label or _pretty_label(index_name), fontsize=FONT_Y_LABEL,
+                    labelpad=2, fontweight="normal")
+        ax.tick_params(axis="x", labelsize=FONT_SIZE_TICK)
+
+        # Trim x tick labels if long - modify in place
+        for lbl in ax.get_xticklabels():
+            t = lbl.get_text()
+            if len(t) > 12:
+                lbl.set_text(t[:12])
+            lbl.set_ha("center")
+
+        # Reduce y-tick density
+        ax.yaxis.set_major_locator(ticker.MaxNLocator(nbins=4, prune="both"))
+
+
+    # ── line 
+    elif plot_type == "line":
+        for idx, tool_name in enumerate(tool_order):
+            sub = final_df[final_df["plot_tool"] == tool_name]
+            if sub.empty or index_name not in sub.columns:
+                continue
+            grouped = sub.groupby("target")[index_name].mean()
+            ax.plot(range(len(grouped)), grouped.values,
+                    marker="o", markersize=2,
+                    label=tool_name,
+                    color=_PALETTE[idx % len(_PALETTE)],
+                    linewidth=0.9)
+
+        ax.set_xlabel("Target", fontsize=FONT_SIZE_LABEL, labelpad=2)
+        ax.set_ylabel(y_label, fontsize=6, labelpad=2)
+        ax.legend(fontsize=FONT_SIZE_TICK, frameon=False,
+                  loc="best", handlelength=1, handletextpad=0.4)
+        ax.yaxis.set_major_locator(ticker.MaxNLocator(nbins=4, prune="both"))
+
+    # ── none 
+    elif plot_type == "none":
         ax.set_visible(False)
         return
-    
+
     else:
-        # Unknown plot type - show warning
-        ax.text(0.5, 0.5, f'Unknown plot type: {plot_type}', 
-               ha='center', va='center', fontsize=8, color='red')
-        ax.set_xticks([])
-        ax.set_yticks([])
+        ax.text(0.5, 0.5, f"unknown: {plot_type}", ha="center", va="center",
+                fontsize=FONT_SIZE_TICK, color="red", transform=ax.transAxes)
         return
-    
-    # Add panel label (A), (B), (C), etc.
-    ax.text(-0.15, 1.05, f'({panel_label})', transform=ax.transAxes,
-           fontsize=10, fontweight='bold', va='top', ha='left')
-    
-    # Add light grid
-    ax.grid(True, alpha=0.2, linestyle='--', linewidth=0.5)
-    ax.set_axisbelow(True)
+
+    _apply_base_style(ax)
+
+    # Panel letter in the upper-left, outside the axes box
+    ax.text(-0.18, 1.06, f"({panel_label})", transform=ax.transAxes,
+            fontsize=FONT_SIZE_PANEL, fontweight="bold", va="top", ha="left",
+            clip_on=False)
 
 
-def create_index_plots(tools_data, indices, width_cm=21, height_cm=9.9, 
+# ------------------------
+# Multi-panel figure
+# ------------------------
+
+def create_index_plots(tools_data, indices, width_cm=7, height_cm=9.9, 
                        n_cols_max=4, dpi=300):
     """
     Create a publication-ready main image with subplots for each index.
@@ -257,70 +307,58 @@ def create_index_plots(tools_data, indices, width_cm=21, height_cm=9.9,
     fig : matplotlib figure
         The created figure object
     """
-    
-    # Convert cm to inches for matplotlib
-    width_inch = width_cm / 2.54
-    height_inch = height_cm / 2.54
-    
-    # Prepare combined dataframe
+    # ── global rcParams ─────────────────────────────────────────────────────
+    plt.rcParams.update({
+        "font.family":       "sans-serif",
+        "font.sans-serif":   ["Helvetica", "Arial", "DejaVu Sans"],
+        "font.size":         FONT_SIZE_LABEL,
+        "axes.linewidth":    0.6,
+        "xtick.major.width": 0.5,
+        "ytick.major.width": 0.5,
+        "xtick.major.size":  2,
+        "ytick.major.size":  2,
+        "pdf.fonttype":      42,   # editable text in Illustrator/Inkscape
+        "ps.fonttype":       42,
+    })
+
+    # ── layout ──────────────────────────────────────────────────────────────
     final_df, common_targets = prepare_combined_dataframe(tools_data)
-    
-    print(f"Common targets found: {len(common_targets)}")
-    
-    # Filter out indices with plot type 'none'
-    plottable_indices = {k: v for k, v in indices.items() if v.get('plot') != 'none'}
-    
-    print(f"Creating plots for {len(plottable_indices)} indices...")
-    
-    # Calculate subplot layout
-    n_plots = len(plottable_indices)
+    print(f"Common targets: {len(common_targets)}")
+
+    plottable = {k: v for k, v in indices.items() if v.get("plot") != "none"}
+    n_plots = len(plottable)
     if n_plots == 0:
-        print("No plottable indices found.")
+        print("No plottable indices.")
         return None
-    
+
     n_cols = min(n_cols_max, n_plots)
-    n_rows = (n_plots + n_cols - 1) // n_cols  # Ceiling division
-    
-    print(f"Layout: {n_rows} rows × {n_cols} columns")
-    
-    # Set publication-ready style
-    plt.rcParams['font.family'] = 'sans-serif'
-    plt.rcParams['font.sans-serif'] = ['Arial', 'DejaVu Sans']
-    plt.rcParams['font.size'] = 8
-    plt.rcParams['axes.linewidth'] = 1.0
-    plt.rcParams['xtick.major.width'] = 1.0
-    plt.rcParams['ytick.major.width'] = 1.0
-    
-    # Create main figure
-    fig, axes = plt.subplots(n_rows, n_cols, figsize=(width_inch, height_inch))
-    
-    # Handle single subplot case
-    if n_plots == 1:
-        axes = np.array([axes])
-    
-    # Flatten axes array for easier iteration
-    if n_plots > 1:
-        axes_flat = axes.flatten()
-    else:
-        axes_flat = axes
-    
-    # Create subplot for each index with panel labels from the title field
-    for idx, (index_name, config) in enumerate(plottable_indices.items()):
-        plot_type = config['plot']
-        panel_label = config.get('title', chr(65 + idx))  # Use title field or fallback to A, B, C...
+    n_rows = (n_plots + n_cols - 1) // n_cols
+    print(f"Layout: {n_rows} rows x {n_cols} cols")
+
+    fig, axes = plt.subplots(n_rows, n_cols,
+                             figsize=(width_cm, height_cm),
+                             squeeze=False)
+    axes_flat = axes.flatten()
+
+    for idx, (index_name, cfg) in enumerate(plottable.items()):
+        panel_label = chr(65 + idx)  # A, B, C, D, ... (65 is ASCII for 'A')
         ax = axes_flat[idx]
-        
-        print(f"  ({panel_label}) Creating {plot_type} plot for: {index_name}")
-        create_index_subplot(ax, final_df, tools_data, index_name, plot_type, panel_label)
-    
-    # Hide empty subplots if any
+        print(f"  ({panel_label}) {cfg['plot']}  ←  {index_name}")
+        create_index_subplot(ax, final_df, tools_data,
+                        index_name, cfg["plot"], panel_label,
+                        y_label=cfg.get("title"))
+
+    # Hide unused axes
     for idx in range(n_plots, len(axes_flat)):
         axes_flat[idx].set_visible(False)
-    
-    # Adjust layout to prevent overlap - tighter for publication
-    plt.tight_layout(pad=1.5, h_pad=2.5, w_pad=2.0)
-    
+
+    fig.tight_layout(pad=0.6, h_pad=1.8, w_pad=1.2)
     return fig
+
+
+# -----------------------
+# Pipeline entry points  
+# -----------------------
 
 
 def tool_comparison_plots(exp_name, exp_data, result_data, rerun):
@@ -350,10 +388,6 @@ def tool_comparison_plots(exp_name, exp_data, result_data, rerun):
             print(f"Warning: No figure generated for dataset {d['name']}")
             continue
         
-        # Add main title
-        fig.suptitle(f"Tool Comparison: {d['name']}", 
-                    fontsize=10, fontweight='bold', y=0.98)
-        
         # Save the figure
         save_path = result_path/f"{d['name']}.png"
         plt.savefig(save_path, dpi=300, bbox_inches='tight',
@@ -379,8 +413,6 @@ def get_indices(exp_name, dataset, tool, result_file_name, rerun=False):
     result_file = get_output_path()/f"{exp_name}/{dataset}/{tool}/{result_file_name}.csv"
     indices_file_csv = get_output_path()/f"{exp_name}/{dataset}/{tool}/{result_file_name}_score.csv"
     indices_file_json = get_output_path()/f"{exp_name}/{dataset}/{tool}/{result_file_name}_score.json"
-
-    all_scores = set(INDICES.keys())
     
     generate_scores = False
 
@@ -395,7 +427,7 @@ def get_indices(exp_name, dataset, tool, result_file_name, rerun=False):
     
     if generate_scores:
         score_file_raw = pd.read_csv(result_file)
-        score_file, score_file_json = compute_score(score_file_raw, INDICES.keys())
+        score_file, score_file_json = compute_score(score_file_raw, INDICES_LIST)
         score_file.to_csv(indices_file_csv, index=False)
         with open(indices_file_json, "w") as f:
             json.dump(score_file_json, f, indent=2) 
@@ -415,7 +447,9 @@ def get_exp_file(id):
     return data
 
 
-# ------ CLI ------
+# -----
+# CLI
+# -----
 
 def main():
     # Parent parser for common arguments

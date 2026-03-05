@@ -6,8 +6,12 @@ import json
 import sqlite3
 
 TOOLS = {
-    "coregtor": {},
-    "coregnet":{}
+    "coregtor": {
+        "title":"CoRegTor"
+    },
+    "coregnet":{
+        "title":"CoRegNet"
+    }
 
 }
 

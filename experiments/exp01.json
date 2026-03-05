@@ -3,7 +3,19 @@
   "about": "To run CoRegTor on multiple bulk tissue gene expression datasets from GTEx portal",
   "tags": [],
   "rerun": false,
-  "datasets": ["amygdala", "bladder","blood","cortex-ba9","heart_left_ventricle","heart_atrial_appendage","hypothalamus","kidney_cortex","lung","muscle_skeletal","thyroid"],
+  "datasets": [
+    "amygdala",
+    "bladder",
+    "blood",
+    "cortex-ba9",
+    "heart_left_ventricle",
+    "heart_atrial_appendage",
+    "hypothalamus",
+    "kidney_cortex",
+    "lung",
+    "muscle_skeletal",
+    "thyroid"
+  ],
   "target": {
     "type": "no_tf",
     "non_zero_threshold": 0.8
@@ -18,7 +30,7 @@
         "model": "rf",
         "model_options": {
           "max_depth": 5,
-          "n_jobs":-1,
+          "n_jobs": -1,
           "n_estimators": 1000,
           "random_state": 120
         }
@@ -58,5 +70,79 @@
         }
       ]
     }
-  }
+  },
+  "results": [
+    {
+      "name": "coregtor_plots",
+      "type": "tool_comparison_plots",
+      "datasets": [
+        {
+          "name": "kidney_cortex",
+          "tools": {
+           
+            "coregtor": "result_default"
+          }
+        },
+        {
+          "name": "heart_atrial_appendage",
+          "tools": {
+           
+            "coregtor": "result_default"
+          }
+        },
+
+        {
+          "name": "amygdala",
+          "tools": {
+           
+            "coregtor": "result_default"
+          }
+        },
+        {
+          "name": "bladder",
+          "tools": {
+          
+            "coregtor": "result_default"
+          }
+        },
+        {
+          "name": "blood",
+          "tools": {
+           
+            "coregtor": "result_default"
+          }
+        },
+       
+        {
+          "name": "lung",
+          "tools": {
+           
+            "coregtor": "result_default"
+          }
+        },
+
+        {
+          "name": "cortex-ba9",
+          "tools": {
+          
+            "coregtor": "result_default"
+          }
+        },
+        {
+          "name": "hypothalamus",
+          "tools": {
+          
+            "coregtor": "result_default"
+          }
+        },
+        {
+          "name": "muscle_skeletal",
+          "tools": {
+           
+            "coregtor": "result_default"
+          }
+        }
+      ]
+    }
+  ]
 }

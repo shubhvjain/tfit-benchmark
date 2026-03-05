@@ -25,18 +25,18 @@ from tfitpy import compute_indices
 from util import TOOLS, get_exp_path, get_temp_path, get_output_path, get_data_path, get_dataset
 
 
-INDICES_LIST = ["goa_lin_similarity","goa_resnik_similarity","goa_jc_similarity","shortest_PPI_path_score_hippie","shortest_PPI_path_score_stringdb","shortest_PPI_path_score_biogrid","shared_PPI_partners_score_hippie","shared_PPI_partners_score_stringdb","shared_PPI_partners_score_biogrid","grn_collectri"]
+INDICES_LIST = ["goa_similarity","shortest_PPI_path_score_hippie","shortest_PPI_path_score_stringdb","shortest_PPI_path_score_biogrid","shared_PPI_partners_score_hippie","shared_PPI_partners_score_stringdb","shared_PPI_partners_score_biogrid","grn_collectri"]
 
 INDICES = {
-    "goa_lin_similarity": {
+    "goa_similarity_lin": {
         "title": "GO Similarity (Lin)",
         "plot":"box"
     },
-    "goa_resnik_similarity": {
+    "goa_similarity_resnik": {
         "title": "GO Similarity (Resnik)",
         "plot":"box"
     },
-    "goa_jc_similarity": {
+    "goa_similarity_jc": {
         "title": "GO Similarity (JC)",
         "plot":"box"
     },
@@ -125,42 +125,59 @@ def prepare_combined_dataframe(tools_data):
 
 
 
-def compute_score(data, indices):
+def compute_score(data):
     """Compute scores for the given data."""
     if data is None:
         raise ValueError("No data provided")
     mask = data['sources'].str.split(";").str.len() > 1
     data = data[mask].copy()
     bio_data_path = Path(os.path.expandvars(os.getenv("DATA_PATH")))
-    df_score, add_data = compute_indices(df=data, methods=indices, data_path=bio_data_path)
+    df_score, add_data = compute_indices(df=data,  data_path=bio_data_path)
     return df_score, add_data
 
 
-def get_indices(exp_name, dataset, tool, result_file_name, rerun=False):
+def get_indices(exp_name, dataset, tool, result_file_name,rerun=False):
     """Generate indices for tool results if not already generated and return the values."""
     result_file       = get_output_path() / f"{exp_name}/{dataset}/{tool}/{result_file_name}.csv"
-    indices_file_csv  = get_output_path() / f"{exp_name}/{dataset}/{tool}/{result_file_name}_score.csv"
+    #indices_file_csv  = get_output_path() / f"{exp_name}/{dataset}/{tool}/{result_file_name}_score.csv"
     indices_file_json = get_output_path() / f"{exp_name}/{dataset}/{tool}/{result_file_name}_score.json"
 
-    generate_scores = False
+    score_file = pd.read_csv(result_file)
+    # with open(indices_file_json, "r") as f:
+    #     score_file_json = json.load(f)
 
-    if indices_file_csv.exists() and indices_file_json.exists():
-        score_file = pd.read_csv(indices_file_csv)
-        with open(indices_file_json, "r") as f:
-            score_file_json = json.load(f)
-        if rerun:
-            generate_scores = True
-    else:
-        generate_scores = True
-
-    if generate_scores:
-        score_file_raw = pd.read_csv(result_file)
-        score_file, score_file_json = compute_score(score_file_raw, INDICES_LIST)
-        score_file.to_csv(indices_file_csv, index=False)
-        with open(indices_file_json, "w") as f:
-            json.dump(score_file_json, f, indent=2)
-
+    score_file, score_file_json = compute_score(score_file)
+    score_file.to_csv(result_file, index=False)
+    # with open(indices_file_json, "w") as f:
+    #     json.dump(score_file_json, f, indent=2)
     return score_file, score_file_json
+
+
+def combine_dataset_tool_data(all_dataset_tool_data):
+    """
+    Merge tool data across multiple datasets into a single tools_data dict.
+
+    Parameters
+    ----------
+    all_dataset_tool_data : list of dicts
+        Each element is a tool_data dict {tool_name: (df, meta)} from one dataset.
+
+    Returns
+    -------
+    combined_tools_data : dict  {tool_name: (combined_df, meta)}
+    """
+    combined_tools_data = {}
+    for tool_name in TOOLS.keys():
+        dfs = []
+        meta = {}
+        for tool_data in all_dataset_tool_data:
+            if tool_name in tool_data:
+                df, meta = tool_data[tool_name]
+                dfs.append(df)
+        if dfs:
+            combined_df = pd.concat(dfs, ignore_index=True)
+            combined_tools_data[tool_name] = (combined_df, meta)
+    return combined_tools_data
 
 # -----------------------
 # Single-panel drawing
@@ -352,44 +369,23 @@ def _save_index_data(index_dfs, result_path, prefix):
 # Pipeline entry points
 # -----------------------
 
-def combine_dataset_tool_data(all_dataset_tool_data):
-    """
-    Merge tool data across multiple datasets into a single tools_data dict.
-
-    Parameters
-    ----------
-    all_dataset_tool_data : list of dicts
-        Each element is a tool_data dict {tool_name: (df, meta)} from one dataset.
-
-    Returns
-    -------
-    combined_tools_data : dict  {tool_name: (combined_df, meta)}
-    """
-    combined_tools_data = {}
-    for tool_name in TOOLS.keys():
-        dfs = []
-        meta = {}
-        for tool_data in all_dataset_tool_data:
-            if tool_name in tool_data:
-                df, meta = tool_data[tool_name]
-                dfs.append(df)
-        if dfs:
-            combined_df = pd.concat(dfs, ignore_index=True)
-            combined_tools_data[tool_name] = (combined_df, meta)
-    return combined_tools_data
 
 
 def tool_comparison_plots(exp_name, exp_data, result_data, rerun):
     """Generate tool comparison plots for each dataset."""
     result_path = get_output_path() / f"{exp_name}/_results/{result_data.get('name')}"
     result_path.mkdir(parents=True, exist_ok=True)
+    
+    # indices = result_data.get("indices",None)
+    # if indices is None:
+    #     indices = INDICES_LIST
 
     for d in result_data.get("datasets", []):
         print(f"\nProcessing dataset: {d['name']}")
 
         tool_data = {}
         for t in TOOLS.keys():
-            tool_data[t] = get_indices(exp_name, d["name"], t, d["tools"][t], rerun)
+            tool_data[t] = get_indices(exp_name, d["name"], t, d["tools"][t],rerun)
 
         fig, index_dfs = create_index_plots(
             tools_data=tool_data,
@@ -421,14 +417,13 @@ def tool_comparison_plots_combined(exp_name, exp_data, result_data, rerun):
     result_path.mkdir(parents=True, exist_ok=True)
 
     all_datasets = result_data.get("datasets", [])
-
-
     all_dataset_tool_data = []
+    
     for d in all_datasets:
         print(f"\nLoading dataset: {d['name']}")
         tool_data = {}
         for t in TOOLS.keys():
-            tool_data[t] = get_indices(exp_name, d["name"], t, d["tools"][t], rerun)
+            tool_data[t] = get_indices(exp_name, d["name"], t, d["tools"][t],rerun)
         all_dataset_tool_data.append(tool_data)
 
     combined_tools_data = combine_dataset_tool_data(all_dataset_tool_data)

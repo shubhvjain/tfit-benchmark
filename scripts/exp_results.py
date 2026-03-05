@@ -24,6 +24,8 @@ from tfitpy import compute_indices
 
 from util import TOOLS, get_exp_path, get_temp_path, get_output_path, get_data_path, get_dataset
 
+from joblib import Parallel, delayed
+
 
 INDICES_LIST = ["goa_similarity","shortest_PPI_path_score_hippie","shortest_PPI_path_score_stringdb","shortest_PPI_path_score_biogrid","shared_PPI_partners_score_hippie","shared_PPI_partners_score_stringdb","shared_PPI_partners_score_biogrid","grn_collectri"]
 
@@ -371,21 +373,16 @@ def _save_index_data(index_dfs, result_path, prefix):
 
 
 
-def tool_comparison_plots(exp_name, exp_data, result_data, rerun):
+def tool_comparison_plots(exp_name, exp_data, result_data, rerun, n_jobs=8):
     """Generate tool comparison plots for each dataset."""
     result_path = get_output_path() / f"{exp_name}/_results/{result_data.get('name')}"
     result_path.mkdir(parents=True, exist_ok=True)
-    
-    # indices = result_data.get("indices",None)
-    # if indices is None:
-    #     indices = INDICES_LIST
 
-    for d in result_data.get("datasets", []):
+    def process_dataset(d):
         print(f"\nProcessing dataset: {d['name']}")
-
         tool_data = {}
         for t in TOOLS.keys():
-            tool_data[t] = get_indices(exp_name, d["name"], t, d["tools"][t],rerun)
+            tool_data[t] = get_indices(exp_name, d["name"], t, d["tools"][t], rerun)
 
         fig, index_dfs = create_index_plots(
             tools_data=tool_data,
@@ -398,14 +395,19 @@ def tool_comparison_plots(exp_name, exp_data, result_data, rerun):
 
         if fig is None:
             print(f"Warning: No figure generated for dataset {d['name']}")
-            continue
+            return
 
         _save_index_data(index_dfs, result_path, prefix=d["name"])
         _save_figure(fig, result_path, stem=d["name"])
         plt.close(fig)
 
+    Parallel(n_jobs=n_jobs)(
+        delayed(process_dataset)(d)
+        for d in result_data.get("datasets", [])
+    )
 
-def tool_comparison_plots_combined(exp_name, exp_data, result_data, rerun):
+
+def tool_comparison_plots_combined(exp_name, exp_data, result_data, rerun, n_jobs=8):
     """Generate a single combined plot across all (or selected) datasets.
 
     Parameters
@@ -467,9 +469,11 @@ def get_exp_file(id):
 
 def main():
     parent_parser = argparse.ArgumentParser(add_help=False)
-    parent_parser.add_argument("--id",    required=True, help="experiment name")
-    parent_parser.add_argument("--name",  required=True, help="result id")
-    parent_parser.add_argument("--rerun", action="store_true", help="whether to rerun the experiment")
+    parent_parser.add_argument("--id",     required=True, help="experiment name")
+    parent_parser.add_argument("--name",   required=True, help="result id")
+    parent_parser.add_argument("--rerun",  action="store_true", help="whether to rerun the experiment")
+    parent_parser.add_argument("--n_jobs", type=int, default=8,
+                               help="number of parallel workers for index loading (default: 8)")
 
     parser = argparse.ArgumentParser(
         description="Generate result",
@@ -484,7 +488,7 @@ def main():
             raise ValueError("Result not found")
         if result.get("type") not in RESULT_REGISTRY:
             raise ValueError("Invalid result type")
-        RESULT_REGISTRY[result.get("type")](args.id, exp, result, args.rerun)
+        RESULT_REGISTRY[result.get("type")](args.id, exp, result, args.rerun, n_jobs=args.n_jobs)
     else:
         raise ValueError("provide id and name")
 

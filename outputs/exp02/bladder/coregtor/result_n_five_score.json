@@ -1,0 +1,106 @@
+{
+  "ebca3b13c106": {
+    "sources": "ATF4;ETS2;TEAD3;ID2;ELF3;YBX1",
+    "target": "ACTA2"
+  },
+  "31d6b7b65adc": {
+    "sources": "YBX1;ELF3;ID1;TEAD3;PRDX5",
+    "target": "ACTB"
+  },
+  "824f7358d278": {
+    "sources": "EPAS1;YWHAZ;EZR;PRDX5;YWHAE",
+    "target": "APP"
+  },
+  "7c560c5ff5f3": {
+    "sources": "ID2;ETS2;JUNB;TAGLN2;FOSL2",
+    "target": "CDKN1A"
+  },
+  "eafac8fc88f8": {
+    "sources": "TRIM28;YBX1;BCL6;RPL6;SOD1",
+    "target": "CLU"
+  },
+  "f9394df9e9a3": {
+    "sources": "FOSL2;FOS;ID2;CEBPB;JUN",
+    "target": "DUSP1"
+  },
+  "64154551dcab": {
+    "sources": "CBX7;TEAD3;YBX1;ID2;PRNP",
+    "target": "FN1"
+  },
+  "78d776d625ee": {
+    "sources": "HSPA5;CEBPD;ETS2;BCL6;EPAS1",
+    "target": "GADD45B"
+  },
+  "0b8604d87753": {
+    "sources": "PRDX5;PKM;EZR;ELF3;ID1",
+    "target": "GSTP1"
+  },
+  "e6fe733dfd06": {
+    "sources": "RPL6;TAGLN2;HSPA5;PKM;TEAD3",
+    "target": "HLA-DRB1"
+  },
+  "d3029c4122ab": {
+    "sources": "RPL6;PKM;HNRNPA1;STAT6;TAGLN2",
+    "target": "HLA-E"
+  },
+  "9ed6d713c096": {
+    "sources": "HSPA5;BHLHE40",
+    "target": "HLA-E"
+  },
+  "1cf82b60a4c5": {
+    "sources": "HSPA5;YWHAE;PKM;STAT6;CSNK2B",
+    "target": "HSP90AA1"
+  },
+  "3a7b1a63614a": {
+    "sources": "ID2;PRDX5;ID1;ELF3;YBX1",
+    "target": "ID3"
+  },
+  "b98c0873c240": {
+    "sources": "ETS2;NUCB1;CEBPB;EZR;NR4A1",
+    "target": "MAT2A"
+  },
+  "5976e3064b8b": {
+    "sources": "LDB1;FOSL2;HNRNPA1;CEBPB;EWSR1",
+    "target": "NFKBIA"
+  },
+  "9e58f1bbb81d": {
+    "sources": "EGR1;EPAS1;CEBPD;ID2;BCL6;NFE2L2;FOS",
+    "target": "PDK4"
+  },
+  "a4cf65b0c1d9": {
+    "sources": "TEAD3;CBX7;ID2;ATF4;PRDX5",
+    "target": "PDLIM7"
+  },
+  "faf3a225c41a": {
+    "sources": "ENO1;EPAS1;NUCB1;PRNP;YBX1",
+    "target": "RHOA"
+  },
+  "076a2673e2b6": {
+    "sources": "TAGLN2;BCL6;TRIM28;NFE2L1;CBX7",
+    "target": "SPARC"
+  },
+  "3b9f0bc95e11": {
+    "sources": "TEAD3;YBX1;ATF4;ID2;CBX7",
+    "target": "TAGLN"
+  },
+  "aee8eaea9dd8": {
+    "sources": "JUND;ENO1;YBX1;TPI1;BCL6",
+    "target": "TIMP1"
+  },
+  "c118473caadd": {
+    "sources": "EPAS1;TRIM28;STAT6;JUND;UBB",
+    "target": "TIMP3"
+  },
+  "f46bddf009d9": {
+    "sources": "SOD1;TRIM28;CBX7;NFE2L1;UBXN1",
+    "target": "TKT"
+  },
+  "287b68022145": {
+    "sources": "YBX1;ENO1;BCL6;NUCB1;TEAD3",
+    "target": "TXN"
+  },
+  "c36725f9eea4": {
+    "sources": "ENO1;TRIM28;PKM;CEBPD;CLK1",
+    "target": "VIM"
+  }
+}

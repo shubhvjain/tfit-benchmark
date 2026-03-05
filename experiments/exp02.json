@@ -176,33 +176,6 @@
   },
   "results":[
     {
-      "name":"tool_plots",
-      "type":"tool_comparison_plots",
-      "datasets":[
-        {
-          "name":"amygdala",
-          "tools":{
-            "coregnet":"results",
-            "coregtor":"result_default"
-          }
-        },
-        {
-          "name":"bladder",
-          "tools":{
-            "coregnet":"results",
-            "coregtor":"result_default"
-          }
-        },
-        {
-          "name":"blood",
-          "tools":{
-            "coregnet":"results",
-            "coregtor":"result_default"
-          }
-        }
-      ]
-    },
-    {
       "name":"tool_plots5",
       "type":"tool_comparison_plots",
       "datasets":[
@@ -210,23 +183,60 @@
           "name":"amygdala",
           "tools":{
             "coregnet":"results",
-            "coregtor":"n_five"
+            "coregtor":"result_n_five"
           }
         },
         {
           "name":"bladder",
           "tools":{
             "coregnet":"results",
-            "coregtor":"n_five"
+            "coregtor":"result_n_five"
           }
         },
         {
           "name":"blood",
           "tools":{
             "coregnet":"results",
-            "coregtor":"n_five"
+            "coregtor":"result_n_five"
+          }
+        },
+         {
+          "name":"thyroid",
+          "tools":{
+            "coregnet":"results",
+            "coregtor":"result_n_five"
+          }
+        },
+         {
+          "name":"lung",
+          "tools":{
+            "coregnet":"results",
+            "coregtor":"result_n_five"
+          }
+        },
+       
+         {
+          "name":"cortex-ba9",
+          "tools":{
+            "coregnet":"results",
+            "coregtor":"result_n_five"
+          }
+        },
+         {
+          "name":"hypothalamus",
+          "tools":{
+            "coregnet":"results",
+            "coregtor":"result_n_five"
+          }
+        },
+        {
+          "name":"heart_left_ventricle",
+          "tools":{
+            "coregnet":"results",
+            "coregtor":"result_n_five"
           }
         }
+        
       ]
     }
   ]

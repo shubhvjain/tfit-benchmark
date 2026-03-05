@@ -1,0 +1,74 @@
+{
+  "8443a671c5a9": {
+    "sources": "BHLHE40;ELF3;EZR;FOS;ID1;ID2;JUNB",
+    "target": "ACTA2"
+  },
+  "9d9c38b31ef7": {
+    "sources": "BHLHE40;ELF3;EZR;FOS;FOSL2;ID1;JUNB;NR4A1",
+    "target": "ACTB"
+  },
+  "a2d501206cf6": {
+    "sources": "BHLHE40;CEBPB;CEBPD;EGR1;ELF3;ETS2;FOS;FOSL2;ID1;ID2;JUNB;NR4A1",
+    "target": "CDKN1A"
+  },
+  "9fb9d40d06c0": {
+    "sources": "BCL6;BHLHE40;EGR1;ELF3;EZR;FOS;ID1;ID2;JUNB;NR4A1",
+    "target": "CLU"
+  },
+  "d8e26eea77da": {
+    "sources": "BHLHE40;CEBPB;EGR1;ELF3;ETS2;FOS;ID1;ID2;JUN;JUNB;NR4A1",
+    "target": "DUSP1"
+  },
+  "a4c0ac969724": {
+    "sources": "BHLHE40;ELF3;EZR;FOS;ID1;JUNB;NR4A1",
+    "target": "FN1"
+  },
+  "fa66eaa25a6d": {
+    "sources": "BCL6;CEBPD;ELF3;ID1",
+    "target": "GADD45B"
+  },
+  "ffaed4534628": {
+    "sources": "BHLHE40;ELF3;FOS;ID1;JUNB;NR4A1",
+    "target": "HLA-DRB1"
+  },
+  "ffbb12f9a127": {
+    "sources": "BHLHE40;CEBPB;CEBPD;EGR1;ELF3;ETS2;FOS;ID1;ID2;JUNB;NR4A1",
+    "target": "HLA-E"
+  },
+  "07ff81a5ee14": {
+    "sources": "BHLHE40;EGR1;ELF3;EZR;FOS;ID1;ID2;JUNB;NR4A1",
+    "target": "ID3"
+  },
+  "9c0825cf6d31": {
+    "sources": "BHLHE40;ELF3;ID1",
+    "target": "PDK4"
+  },
+  "beb7cf0e58af": {
+    "sources": "BHLHE40;ELF3;EZR;FOS;ID1;JUNB",
+    "target": "PDLIM7"
+  },
+  "ccdec7e02b0e": {
+    "sources": "BCL6;BHLHE40;ELF3;EZR;ID1;NR4A1",
+    "target": "SPARC"
+  },
+  "ab17dc1c8710": {
+    "sources": "BHLHE40;EGR1;ELF3;EZR;FOS;ID1;ID2;JUNB;NR4A1",
+    "target": "TAGLN"
+  },
+  "b39199c9bd28": {
+    "sources": "EGR1;ELF3;EZR;FOS;ID1;JUN;NR4A1",
+    "target": "TIMP1"
+  },
+  "92781efa3ffd": {
+    "sources": "BCL6;CEBPB;EGR1;ELF3;ID1;JUN;JUND;NR4A1",
+    "target": "TIMP3"
+  },
+  "d9f64ddf953f": {
+    "sources": "BHLHE40;EGR1;ELF3;FOS;ID1;JUNB;NR4A1",
+    "target": "TKT"
+  },
+  "e42775a152a9": {
+    "sources": "BHLHE40;CEBPB;EGR1;ELF3;EZR;ID1;ID2;JUN;NR4A1",
+    "target": "VIM"
+  }
+}

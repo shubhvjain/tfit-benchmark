@@ -90,7 +90,7 @@ exp-init: ## Initialize an experiment
 	poetry run python scripts/exp_init.py init $(name)
 
 exp-result: ## Generate results for an exp
-	poetry run python scripts/exp_results.py --id $(id)  --name $(name) $(if $(rerun),--rerun,) 
+	poetry run python scripts/exp_results.py --id $(id)  --name $(name) $(if $(rerun),--rerun,) $(if $(n_jobs),--n_jobs $(n_jobs) ,) 
 
 
 run-coregtor: ## Run coregtor pipeline. Actions: run, result, update_status, reset_failed, reset_claimed

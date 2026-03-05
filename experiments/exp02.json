@@ -115,7 +115,7 @@
   "tf": {
     "top_expressed_n": 50
   },
-  "tools": ["coregtor","coregnet"],
+  "tools": ["coregtor", "coregnet"],
   "tool_run": {
     "coregtor": {
       "create_model": {
@@ -148,7 +148,7 @@
         }
       ]
     },
-    "coregnet":{
+    "coregnet": {
       "discretization_threshold": 0.05
     }
   },
@@ -168,75 +168,96 @@
           "matrix_id": "default",
           "method": "hierarchical_clustering",
           "method_options": {
-            "min_cluster_size":5
+            "min_cluster_size": 5
           }
         }
       ]
     }
   },
-  "results":[
+  "results": [
     {
-      "name":"tool_plots5",
-      "type":"tool_comparison_plots",
-      "datasets":[
+      "name": "tool_plots5",
+      "type": "tool_comparison_plots",
+      "datasets": [
         {
-          "name":"amygdala",
-          "tools":{
-            "coregnet":"results",
-            "coregtor":"result_n_five"
-          }
-        },
-        {
-          "name":"bladder",
-          "tools":{
-            "coregnet":"results",
-            "coregtor":"result_n_five"
+          "name": "kidney_cortex",
+          "tools": {
+            "coregnet": "results",
+            "coregtor": "result_n_five"
           }
         },
         {
-          "name":"blood",
-          "tools":{
-            "coregnet":"results",
-            "coregtor":"result_n_five"
+          "name": "heart_atrial_appendage",
+          "tools": {
+            "coregnet": "results",
+            "coregtor": "result_n_five"
           }
         },
-         {
-          "name":"thyroid",
-          "tools":{
-            "coregnet":"results",
-            "coregtor":"result_n_five"
-          }
-        },
-         {
-          "name":"lung",
-          "tools":{
-            "coregnet":"results",
-            "coregtor":"result_n_five"
-          }
-        },
-       
-         {
-          "name":"cortex-ba9",
-          "tools":{
-            "coregnet":"results",
-            "coregtor":"result_n_five"
-          }
-        },
-         {
-          "name":"hypothalamus",
-          "tools":{
-            "coregnet":"results",
-            "coregtor":"result_n_five"
+
+        {
+          "name": "amygdala",
+          "tools": {
+            "coregnet": "results",
+            "coregtor": "result_n_five"
           }
         },
         {
-          "name":"heart_left_ventricle",
-          "tools":{
-            "coregnet":"results",
-            "coregtor":"result_n_five"
+          "name": "bladder",
+          "tools": {
+            "coregnet": "results",
+            "coregtor": "result_n_five"
+          }
+        },
+        {
+          "name": "blood",
+          "tools": {
+            "coregnet": "results",
+            "coregtor": "result_n_five"
+          }
+        },
+        {
+          "name": "thyroid",
+          "tools": {
+            "coregnet": "results",
+            "coregtor": "result_n_five"
+          }
+        },
+        {
+          "name": "lung",
+          "tools": {
+            "coregnet": "results",
+            "coregtor": "result_n_five"
+          }
+        },
+
+        {
+          "name": "cortex-ba9",
+          "tools": {
+            "coregnet": "results",
+            "coregtor": "result_n_five"
+          }
+        },
+        {
+          "name": "hypothalamus",
+          "tools": {
+            "coregnet": "results",
+            "coregtor": "result_n_five"
+          }
+        },
+        {
+          "name": "muscle_skeletal",
+          "tools": {
+            "coregnet": "results",
+            "coregtor": "result_n_five"
+          }
+        },
+        {
+          "name": "heart_left_ventricle",
+          "tools": {
+            "coregnet": "results",
+            "coregtor": "result_n_five"
           }
         }
-        
       ]
     }
   ]

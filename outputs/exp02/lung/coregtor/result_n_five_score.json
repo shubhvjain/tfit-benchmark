@@ -1,0 +1,106 @@
+{
+  "da22c435fa10": {
+    "sources": "TBX2;XBP1;CSNK2B;CLK1;YWHAZ",
+    "target": "ACTA2"
+  },
+  "f7199323b626": {
+    "sources": "TPI1;P4HB;ENO1;PKM;YWHAE",
+    "target": "ACTB"
+  },
+  "33383cbef980": {
+    "sources": "TAGLN2;STAT3;ETS2;TRIP10;BCL6",
+    "target": "APOE"
+  },
+  "9da916193cec": {
+    "sources": "EPAS1;YWHAE",
+    "target": "APP"
+  },
+  "18ff1e68ece5": {
+    "sources": "GADD45A;BCL3;ETS2",
+    "target": "CDKN1A"
+  },
+  "c140415d8fca": {
+    "sources": "CLK1;ANXA1",
+    "target": "CLU"
+  },
+  "564ea328c958": {
+    "sources": "PSMA6;NUCB1;STAT6;RPL6;NPDC1",
+    "target": "CLU"
+  },
+  "ac7f3d159fbc": {
+    "sources": "JUN;NR4A1;EGR1",
+    "target": "DUSP1"
+  },
+  "88cf45584e84": {
+    "sources": "HNRNPA1;YWHAZ;CSNK2B;TRIP10;GADD45A",
+    "target": "FN1"
+  },
+  "1a2de3b47569": {
+    "sources": "SNRNP70;BCL6;BHLHE40;RPL35;TAGLN2",
+    "target": "HBB"
+  },
+  "e1ec3b26b61f": {
+    "sources": "NPDC1;TRIP10",
+    "target": "HBB"
+  },
+  "1a9c37923a4b": {
+    "sources": "EPAS1;STAT6;RPL6;BCL3;BHLHE40",
+    "target": "HLA-DRB1"
+  },
+  "79cca8217f14": {
+    "sources": "TRIP10;EPAS1",
+    "target": "HLA-E"
+  },
+  "df9f62aff938": {
+    "sources": "STAT6;ANXA1;KLF6;NUCB1;CLK1;GADD45A",
+    "target": "HSP90AA1"
+  },
+  "cdb439f6625c": {
+    "sources": "ANXA1;NUCB1;CLK1;YBX1;KLF6",
+    "target": "HSPA1A"
+  },
+  "02f99928f85e": {
+    "sources": "STAT6;NR4A1",
+    "target": "HSPA1A"
+  },
+  "f199b6357f93": {
+    "sources": "GADD45A;TBX2;JUNB;ETS2;BCL3;HSPA5;TRIP10",
+    "target": "NFKBIA"
+  },
+  "07ef689d8d4c": {
+    "sources": "BCL3;KLF9;BHLHE40;PKM;KLF4;CEBPB",
+    "target": "PDK4"
+  },
+  "17075bca14be": {
+    "sources": "YWHAE;YWHAZ;TAGLN2",
+    "target": "RHOA"
+  },
+  "9cdadfcfccdd": {
+    "sources": "BCL3;JUNB;ETS2;BHLHE40;GADD45A",
+    "target": "SOCS3"
+  },
+  "148cbde7e160": {
+    "sources": "TBX2;TAGLN2;CSNK2B;YWHAZ;TRIP10",
+    "target": "SPARC"
+  },
+  "e6067768bc38": {
+    "sources": "CLK1;ETS2",
+    "target": "SPARC"
+  },
+  "5b12d0b27413": {
+    "sources": "GADD45A;TAGLN2;CSNK2B;HNRNPA1;TRIP10",
+    "target": "TAGLN"
+  },
+  "8daef8602e45": {
+    "sources": "TPI1;YBX1;PKM;P4HB;RPL35",
+    "target": "TIMP1"
+  },
+  "816761c421f7": {
+    "sources": "EPAS1;KLF9",
+    "target": "TIMP3"
+  },
+  "37210c278d03": {
+    "sources": "RPL6;TBX2;RPL35;XBP1;CLK1;NPDC1",
+    "target": "VIM"
+  }
+}

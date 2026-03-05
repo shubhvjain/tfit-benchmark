@@ -1,0 +1,190 @@
+{
+  "161d2378576a": {
+    "sources": "P4HB;RPS4X",
+    "target": "ACTA2"
+  },
+  "c6ab60d584c8": {
+    "sources": "EGR1;EPAS1;TAGLN2;SNRNP70;JUND",
+    "target": "ACTA2"
+  },
+  "dfc15ee78c3c": {
+    "sources": "TAGLN2;ENO1;RPL6;HNRNPA1;RPS4X",
+    "target": "ACTB"
+  },
+  "22611b90d926": {
+    "sources": "YBX1;UGP2;CFL2;EZR;HSPA5;YWHAE",
+    "target": "APP"
+  },
+  "07423d7ba69a": {
+    "sources": "ENO1;ATF4;CEBPD;HNRNPA1;RPL6;TAGLN2;RPS10",
+    "target": "CDKN1A"
+  },
+  "ff4110b9a64d": {
+    "sources": "UGP2;YWHAE;CFL2;DRAP1;ATF4;CD59",
+    "target": "CRYAB"
+  },
+  "6a9f50165b98": {
+    "sources": "FOS;NR4A1;JUN",
+    "target": "DUSP1"
+  },
+  "c61051561df4": {
+    "sources": "HSF1;UBXN1;NUCB1;RPS4X;ATF4",
+    "target": "DUSP1"
+  },
+  "d94b52528f49": {
+    "sources": "EGR1;TPI1;JUNB;CEBPD",
+    "target": "DUSP1"
+  },
+  "3c413f4ed616": {
+    "sources": "P4HB;DRAP1;CD59;RPS10;PKM",
+    "target": "FN1"
+  },
+  "bada0ba977bc": {
+    "sources": "TPI1;YBX1",
+    "target": "FN1"
+  },
+  "e613052e25bb": {
+    "sources": "CEBPD;JUNB;TAGLN2",
+    "target": "GADD45B"
+  },
+  "0c155ae90c48": {
+    "sources": "UBXN1;DRAP1;RPS10;CSNK2B",
+    "target": "GSTP1"
+  },
+  "fc934945fc6e": {
+    "sources": "EPAS1;CEBPD;NKX2-5;TAGLN2;SNRNP70;TPI1",
+    "target": "HBB"
+  },
+  "5219ffcaaba9": {
+    "sources": "HSF1;NR4A1",
+    "target": "HLA-E"
+  },
+  "7de7a6f77b6a": {
+    "sources": "RPS10;TPI1;EGR1",
+    "target": "HLA-E"
+  },
+  "16541e1fe22a": {
+    "sources": "ENO1;CSNK2B;NUCB1;RPL35;UBXN1",
+    "target": "HLA-E"
+  },
+  "5603cdf731cb": {
+    "sources": "HSPA5;ATF4;YWHAE;CEBPD;ESRRA",
+    "target": "HSP90AA1"
+  },
+  "6e0ef088fc0a": {
+    "sources": "CFL2;RPL35",
+    "target": "HSP90AA1"
+  },
+  "fb3a75facf1a": {
+    "sources": "JUN;ATF4;FOS",
+    "target": "HSPA1A"
+  },
+  "072acb257555": {
+    "sources": "CEBPD;HSPA5;JUND",
+    "target": "HSPA1A"
+  },
+  "61df19eea977": {
+    "sources": "SNRNP70;RPS4X;TAGLN2;HNRNPA1;ID1",
+    "target": "ID3"
+  },
+  "336db7fc524a": {
+    "sources": "EPAS1;JUNB",
+    "target": "ID3"
+  },
+  "1b9abfdd0219": {
+    "sources": "ATF4;CEBPD",
+    "target": "ID3"
+  },
+  "92ba7b5f3f85": {
+    "sources": "JUNB;CEBPD",
+    "target": "MAT2A"
+  },
+  "9321da1ed948": {
+    "sources": "ENO1;TPI1",
+    "target": "MAT2A"
+  },
+  "f652ef390022": {
+    "sources": "HSPA5;NUCB1;CSNK2B;HNRNPA1;PSMA6;CD59;P4HB",
+    "target": "MAT2A"
+  },
+  "f4885aed5188": {
+    "sources": "JUNB;JUND;NR4A1;CEBPD;JUN",
+    "target": "MCL1"
+  },
+  "d2411a3204ec": {
+    "sources": "EGR1;TAGLN2",
+    "target": "MCL1"
+  },
+  "7dfc055ebd8f": {
+    "sources": "HNRNPA1;ATF4",
+    "target": "MCL1"
+  },
+  "beb6feb04e28": {
+    "sources": "ESRRA;EZR;PSMA6;HADHB;UGP2",
+    "target": "PDK4"
+  },
+  "8d969d4fd833": {
+    "sources": "PSMA6;YBX1;TPI1;PKM;PDLIM5;SUCLG1;SOD1",
+    "target": "PRKACA"
+  },
+  "7a0ce18181d6": {
+    "sources": "YWHAE;HNRNPA1;P4HB;CD59;PSMA6;RPL6",
+    "target": "RHOA"
+  },
+  "d1fe5a4ae6b0": {
+    "sources": "CEBPD;CSNK2B",
+    "target": "SPARC"
+  },
+  "fc8bd6ae1b43": {
+    "sources": "P4HB;RPS4X",
+    "target": "SPARC"
+  },
+  "7cc6d7448642": {
+    "sources": "USF2;SNRNP70;ATF4;NR4A1;NUCB1",
+    "target": "SPARC"
+  },
+  "719d122d3862": {
+    "sources": "SNRNP70;RPS4X;TAGLN2;RPL6;HNRNPA1",
+    "target": "TAGLN"
+  },
+  "5bfbc31229fc": {
+    "sources": "TAGLN2;RPS10",
+    "target": "TIMP1"
+  },
+  "2ba4177f0002": {
+    "sources": "P4HB;RPL6;ENO1;HSPA5;HNRNPA1",
+    "target": "TIMP1"
+  },
+  "d93dad188747": {
+    "sources": "JUNB;JUND;EGR1;FOS;NR4A1",
+    "target": "TIMP3"
+  },
+  "e640a6b4fb2b": {
+    "sources": "ATF4;CEBPD;JUNB",
+    "target": "VEGFA"
+  },
+  "8d83046e273d": {
+    "sources": "CSNK2B;NUCB1",
+    "target": "VEGFA"
+  },
+  "98738f5c11eb": {
+    "sources": "HSF1;ID1;NR4A1;RPS10;ENO1",
+    "target": "VEGFA"
+  },
+  "20429d581276": {
+    "sources": "TAGLN2;HNRNPA1;RPS4X;SNRNP70",
+    "target": "VIM"
+  },
+  "8a1f2295dc15": {
+    "sources": "EPAS1;RPS10;RPL6;P4HB;ENO1;TPI1",
+    "target": "VIM"
+  },
+  "e752e3274b34": {
+    "sources": "RPL35;JUNB",
+    "target": "VIM"
+  },
+  "6992a6404608": {
+    "sources": "ATF4;NR4A1",
+    "target": "VIM"
+  }
+}

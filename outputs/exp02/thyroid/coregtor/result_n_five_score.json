@@ -1,0 +1,94 @@
+{
+  "4827fe1ca51a": {
+    "sources": "TAGLN2;EZR;JUNB;NR4A1;FOXE1;ANXA1",
+    "target": "ACTA2"
+  },
+  "f8cfbf642d9b": {
+    "sources": "JUN;NR4A1;EGR1;JUNB",
+    "target": "ACTB"
+  },
+  "2788573f3d8c": {
+    "sources": "PAX8;EPAS1;ID4;CAT;CD59",
+    "target": "APOE"
+  },
+  "062ec63aec3e": {
+    "sources": "SOD1;YBX1;RPS10;RPL6;P4HB",
+    "target": "CLU"
+  },
+  "e1ae23d5b18f": {
+    "sources": "SOD1;DDIT3;JUN;CLK1;FOS",
+    "target": "CRYAB"
+  },
+  "cc113ee0b983": {
+    "sources": "JUN;FOS;EGR1;NR4A1",
+    "target": "DUSP1"
+  },
+  "964082b25af9": {
+    "sources": "TAGLN2;CSNK2B;ATF4;CAT;UBXN1;CD59;RPL35",
+    "target": "HBB"
+  },
+  "7669be19258b": {
+    "sources": "TAGLN2;ATF4;RPL35",
+    "target": "HLA-E"
+  },
+  "f9d29294e440": {
+    "sources": "CLK1;DDIT3;ATF4;SOD1",
+    "target": "HSP90AA1"
+  },
+  "a1b96e3b6843": {
+    "sources": "SOD1;CLK1;FOS;JUN;TRIM28",
+    "target": "HSPA1A"
+  },
+  "7de6f2db5d1d": {
+    "sources": "EZR;PHF1;SF1;IVD;NKX2-1",
+    "target": "MAT2A"
+  },
+  "0e9797e071c4": {
+    "sources": "EGR1;JUNB",
+    "target": "MCL1"
+  },
+  "0c615f46ccfd": {
+    "sources": "JUND;NR4A1;FOS",
+    "target": "MCL1"
+  },
+  "69e69f1403c0": {
+    "sources": "NR4A1;JUND",
+    "target": "PER1"
+  },
+  "d541b48ebc6d": {
+    "sources": "PAX8;SF1;PHF1",
+    "target": "PER1"
+  },
+  "5699cca74e16": {
+    "sources": "YWHAE;CANX;YBX1;SOD1;TPI1",
+    "target": "RHOA"
+  },
+  "c208553f989e": {
+    "sources": "TAGLN2;ANXA1",
+    "target": "SPARC"
+  },
+  "50bbb727a20c": {
+    "sources": "EZR;TAGLN2;JUNB;NR4A1;FOXE1",
+    "target": "TAGLN"
+  },
+  "c2d1dd3faa0c": {
+    "sources": "TAGLN2;ENO1;CD59;CEBPD",
+    "target": "TIMP1"
+  },
+  "81cc866df6e0": {
+    "sources": "RPL35;CAT",
+    "target": "TIMP1"
+  },
+  "2e4fb4fd2085": {
+    "sources": "ENO1;SOD1;PRDX5;TPI1;P4HB",
+    "target": "TKT"
+  },
+  "82ca69d499b1": {
+    "sources": "PAX8;HES1",
+    "target": "VEGFA"
+  },
+  "0555073acc9f": {
+    "sources": "RPL35;RPL6;TAGLN2;ATF4;CSNK2B",
+    "target": "VIM"
+  }
+}

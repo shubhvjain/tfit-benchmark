@@ -1,0 +1,66 @@
+{
+  "4c6c2b7cda63": {
+    "sources": "BCL6;CEBPB;CEBPD;GADD45A",
+    "target": "CDKN1A"
+  },
+  "3c793c98e5f8": {
+    "sources": "CEBPB;CEBPD;GADD45A;JUNB;NR4A1",
+    "target": "DUSP1"
+  },
+  "e7d9286c4197": {
+    "sources": "CEBPD;GADD45A;MYF6",
+    "target": "HMOX1"
+  },
+  "31e429cf5b6a": {
+    "sources": "BCL6;CEBPD;GADD45A;JUNB;MYF6",
+    "target": "HSP90AA1"
+  },
+  "b1db08ca915b": {
+    "sources": "BHLHE40;CEBPB;CEBPD;GADD45A;JUNB;KLF10;NR4A1",
+    "target": "MAT2A"
+  },
+  "7f29537a7b08": {
+    "sources": "BCL6;CEBPB;CEBPD;ENO1;GADD45A;GPD1;JUNB;KLF9;MYF6",
+    "target": "MCL1"
+  },
+  "81774a5370b2": {
+    "sources": "BCL6;CEBPB;CEBPD;GADD45A;JUNB;KLF9;MYF6",
+    "target": "NFKBIA"
+  },
+  "0231f09b46ef": {
+    "sources": "BCL6;CEBPD;GADD45A",
+    "target": "PDK4"
+  },
+  "499ad07c5fa5": {
+    "sources": "BCL6;CEBPB;CEBPD;GADD45A;JUNB;KLF9;MYF6",
+    "target": "PER1"
+  },
+  "c8607abbb3e6": {
+    "sources": "BCL6;GADD45A;NR4A1",
+    "target": "SOD2"
+  },
+  "a45d1269a726": {
+    "sources": "CEBPD;GADD45A;JUNB;NR4A1",
+    "target": "SPARC"
+  },
+  "667530ecccd5": {
+    "sources": "BCL6;CEBPD;GADD45A;MYF6",
+    "target": "SQSTM1"
+  },
+  "8c9e35af5afe": {
+    "sources": "CEBPD;JUNB;NR4A1",
+    "target": "TAGLN"
+  },
+  "c0481a9bb269": {
+    "sources": "CEBPD;GADD45A;JUNB;KLF9",
+    "target": "TIMP3"
+  },
+  "480dfffb001b": {
+    "sources": "BHLHE40;KLF10;MYF6;NR4A1",
+    "target": "VEGFA"
+  },
+  "5025474aaf14": {
+    "sources": "CEBPD;GADD45A;JUNB;MYF6;NR4A1",
+    "target": "VIM"
+  }
+}

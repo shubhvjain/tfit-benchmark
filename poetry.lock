@@ -5212,5 +5212,5 @@ test = ["coverage (>=7.10)", "hypothesis", "mypy", "numpydoc", "packaging", "pyt
 
 [metadata]
 lock-version = "2.1"
-python-versions = "3.12.7"
-content-hash = "73333d7e9dc53c8d9fa0c4caccae5032247e7d636ce6b1c728eafb25f9262ae4"
+python-versions = "3.12.9"
+content-hash = "4fbf8572d83033daa6aff18c36775dcb35fab12153494b2d348ffc0c168078ea"

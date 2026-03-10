@@ -1,3 +1,4 @@
+#new code, metadata part is missing 
 #!/usr/bin/env python3
 """
 Download datasets defined in datasets.json.
@@ -33,7 +34,7 @@ def get_data_root() -> Path:
 
 def is_downloaded(dataset_id: str, data_root: Path) -> bool:
     d = data_root / dataset_id
-    return d.exists() and any(f.is_file() for f in d.iterdir())
+    return (d / "metadata.json").exists()
 
 
 def download_dataset(dataset: dict, data_root: Path, force: bool = False):
@@ -49,7 +50,10 @@ def download_dataset(dataset: dict, data_root: Path, force: bool = False):
     url = dataset["url"]
     file_name = dataset["file_name"]
     known_hash = dataset.get("sha256")
-    processor = pooch.Decompress(name=file_name) if url.endswith(".gz") else None
+    if url.endswith(".gz"):    processor = pooch.Decompress(name=file_name)
+    elif url.endswith(".zip"): processor = pooch.Unzip()
+    elif ".tar" in url:        processor = pooch.Untar()
+    else:                      processor = None
 
     print(f"downloading {dataset_id}")
     pooch.retrieve(
@@ -60,6 +64,10 @@ def download_dataset(dataset: dict, data_root: Path, force: bool = False):
         progressbar=True,
         processor=processor,
     )
+    import datetime, json
+    metadata = {**dataset, "downloaded": str(datetime.datetime.now()), "path": str(dataset_dir)}
+    (dataset_dir / "metadata.json").write_text(json.dumps(metadata, indent=2))
+
 
 
 def download_all(force: bool = False):

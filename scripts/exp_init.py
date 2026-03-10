@@ -120,7 +120,7 @@ def generate_input_json(exp_name: str, dataset_id: str, exp: dict) -> dict:
             return json.load(f)
 
     print(f"  generating input.json: {dataset_id}")
-    _,dataset = get_dataset(dataset_id)
+    _,dataset = get_dataset(dataset_id,normalize=True)
     tflist = load_tflist(exp)
     final_tf, final_targets = resolve_gene_lists(exp, dataset, tflist)
 

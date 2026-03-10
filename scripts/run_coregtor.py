@@ -17,7 +17,7 @@ from util import get_dataset
 from coregtor_pipeline import Pipeline, PipelineResults
 from util import get_output_path,get_temp_path,get_exp_path,get_experiment_paths
 TOOL = "coregtor"
-
+import time 
 #  ------  Config  ------ 
 
 def build_config(exp_name: str, dataset_id: str, exp: dict, targets: list[str]) -> dict:
@@ -358,7 +358,7 @@ def main():
     subparsers = parser.add_subparsers(dest="action", required=True)
     
     run_p = subparsers.add_parser("run", parents=[parent_parser])
-    run_p.add_argument("--worker", default="worker_0", help="unique worker id for this job")
+    run_p.add_argument("--worker", default=f"worker_{int(time.time())}", help="unique worker id for this job")
     run_p.add_argument("--batch", type=int, default=500, help="number of genes to claim per run")
     
     res_p = subparsers.add_parser("result", parents=[parent_parser])

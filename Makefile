@@ -116,6 +116,11 @@ result-coregnet:
 result-exp: ## Generate results for an exp
 	poetry run python scripts/exp_results.py --id $(id)  --name $(name) $(if $(rerun),--rerun,) $(if $(n_jobs),--n_jobs $(n_jobs) ,) 
 
+#===== Index generation for tool results  ========
+
+index-exp: ## Generate results for an exp
+	poetry run python scripts/add_index.py $(action)  --id $(id) --dataset $(dataset)  --tool $(tool) --result $(result)  $(if $(n_buckets),--n_buckets $(n_buckets) ,)   $(if $(rerun),--rerun,)  $(if $(bucket),--bucket $(bucket),)  
+
 #======== Analysis========
 
 new-analysis: ## Create new analysis file. Pass name=analysis1

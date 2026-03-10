@@ -22,7 +22,7 @@ from io import BytesIO
 
 from tfitpy import compute_indices
 
-from util import TOOLS, get_exp_path, get_temp_path, get_output_path, get_data_path, get_dataset
+from util import TOOLS, get_exp_path, get_output_path 
 
 from joblib import Parallel, delayed
 

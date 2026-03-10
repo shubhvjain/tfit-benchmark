@@ -59,7 +59,6 @@
       "about": "Source https://www.gtexportal.org/home/downloads/adult-gtex/bulk_tissue_expression",
       "file_name": "gene_tpm_v11_pancreas_islets.gct",
       "file_output": "gtex_bulk"
-      
     },
     {
       "id": "thyroid",
@@ -68,7 +67,6 @@
       "about": "Source https://www.gtexportal.org/home/downloads/adult-gtex/bulk_tissue_expression",
       "file_name": "gene_tpm_v11_thyroid.gct",
       "file_output": "gtex_bulk"
-     
     },
     {
       "id": "heart_left_ventricle",
@@ -86,7 +84,7 @@
       "file_name": "gene_tpm_v11_heart_atrial_appendage.gct",
       "file_output": "gtex_bulk"
     },
-     {
+    {
       "id": "kidney_cortex",
       "title": "Gene TPMs for Kidney - Cortex",
       "url": "https://storage.googleapis.com/adult-gtex/bulk-gex/v11/rna-seq/tpms-by-tissue/gene_tpm_v11_kidney_cortex.gct.gz",
@@ -94,7 +92,7 @@
       "file_name": "gene_tpm_v11_kidney_cortex.gct",
       "file_output": "gtex_bulk"
     },
-       {
+    {
       "id": "lung",
       "title": "Gene TPMs for Lung",
       "url": "https://storage.googleapis.com/adult-gtex/bulk-gex/v11/rna-seq/tpms-by-tissue/gene_tpm_v11_lung.gct.gz",
@@ -102,13 +100,37 @@
       "file_name": "gene_tpm_v11_lung.gct",
       "file_output": "gtex_bulk"
     },
-     {
+    {
       "id": "muscle_skeletal",
       "title": "Gene TPMs for Muscle - Skeletal",
       "url": "https://storage.googleapis.com/adult-gtex/bulk-gex/v11/rna-seq/tpms-by-tissue/gene_tpm_v11_muscle_skeletal.gct.gz",
       "about": "Source https://www.gtexportal.org/home/downloads/adult-gtex/bulk_tissue_expression",
       "file_name": "gene_tpm_v11_muscle_skeletal.gct",
       "file_output": "gtex_bulk"
+    },
+     {
+      "id": "lung_reads",
+      "title": "Gene read counts for Lung.",
+      "url": "https://storage.googleapis.com/adult-gtex/bulk-gex/v11/rna-seq/counts-by-tissue/gene_reads_v11_lung.gct.gz",
+      "about": "Source https://www.gtexportal.org/home/downloads/adult-gtex/bulk_tissue_expression",
+      "file_name": "gene_reads_v11_lung.gct",
+      "file_output": "gtex_bulk_reads"
+    },
+        {
+      "id": "luad",
+      "title": "TCGA-LUAD Gene Expression Raw Counts",
+      "project": "TCGA-LUAD",
+      "about": "STAR raw counts from GDC for TCGA Lung Adenocarcinoma. Rows=samples, Cols=HGNC genes.",
+      "file_name": "counts_raw.parquet",
+      "file_output": "tcga_counts"
+    },
+    {
+      "id": "lusc",
+      "title": "TCGA-LUSC Gene Expression Raw Counts",
+      "project": "TCGA-LUSC",
+      "about": "STAR raw counts from GDC for TCGA Lung Squamous Cell Carcinoma. Rows=samples, Cols=HGNC genes.",
+      "file_name": "counts_raw.parquet",
+      "file_output": "tcga_counts"
     }
   ]
 }

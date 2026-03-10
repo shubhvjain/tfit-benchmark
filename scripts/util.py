@@ -1,5 +1,6 @@
 
 import pandas as pd
+import numpy as np
 from pathlib import Path
 import os
 import json
@@ -33,6 +34,18 @@ def get_output_path() -> Path:
     p = os.getenv("EXP_OUTPUT_PATH")
     if not p:
         raise EnvironmentError("EXP_OUTPUT_PATH not set")
+    return Path(p)
+
+def get_analysis_output_path() -> Path:
+    p = os.getenv("ANALYSIS_OUTPUT_PATH")
+    if not p:
+        raise EnvironmentError("ANALYSIS_OUTPUT_PATH not set")
+    return Path(p)
+
+def get_analysis_input_path() -> Path:
+    p = os.getenv("ANALYSIS_INPUT_PATH")
+    if not p:
+        raise EnvironmentError("ANALYSIS_INPUT_PATH not set")
     return Path(p)
 
 
@@ -115,7 +128,60 @@ def get_mappings(gene_list, source, target, batch_size=900):
         con.close()
 
 
-def get_dataset(name):
+def normalize_counts(
+    counts: pd.DataFrame,
+    method: str = "log2cpm",
+    min_cpm: float = 0.5,
+    min_samples: int = 2,
+) -> pd.DataFrame:
+    """
+    Normalize an expression matrix (samples by genes) for ML pipelines.
+
+    Do NOT use for DGE tools (DESeq2, edgeR) — they require raw integer
+    counts and handle normalization internally.
+
+    Parameters
+    ----------
+    counts : pd.DataFrame
+        Shape (n_samples, n_genes).
+        "log2cpm" expects raw integer counts (TCGA, GTEx reads).
+        "log2tpm" expects pre-normalized TPM values (GTEx bulk TPM).
+    method : {"log2cpm", "log2tpm"}
+        "log2cpm" : library-size correction → CPM → log2(x+1)
+        "log2tpm" : skips library-size correction → log2(x+1) only
+    min_cpm : float
+        Minimum expression threshold for filtering (default 0.5).
+        Genes below this in fewer than `min_samples` samples are dropped.
+    min_samples : int
+        Minimum number of samples a gene must be expressed in to be kept.
+    """
+    if method == "log2cpm":
+        # Divide each sample's counts by its total library size, scale to
+        # counts-per-million — corrects for sequencing depth differences
+        library_sizes = counts.sum(axis=1)
+        expr = counts.div(library_sizes, axis=0) * 1e6
+    elif method == "log2tpm":
+        # TPM already accounts for library size and gene length — no correction needed
+        expr = counts.copy()
+    else:
+        raise ValueError(f"Unknown method '{method}'. Choose 'log2cpm' or 'log2tpm'.")
+
+    # Drop genes with negligible expression — reduces noise and speeds up training
+    # keep = (expr > min_cpm).sum(axis=0) >= min_samples
+    # expr = expr.loc[:, keep]
+    # n_removed = (~keep).sum()
+    # if n_removed:
+    #     print(f"normalize_counts: removed {n_removed} low-expression genes "
+    #           f"(< {min_cpm} in fewer than {min_samples} samples). "
+    #           f"{keep.sum()} genes retained.")
+
+    # log2(x+1) compresses the dynamic range of RNA-seq data and makes the
+    # distribution more symmetric — the +1 pseudocount avoids log(0)
+    print("normalized")
+    return np.log2(expr + 1)
+
+
+def get_dataset(name,normalize=True):
     """Load dataset using metadata 'file_output' field"""
     p = get_data_path() / f"{name}"
     meta_path = p / "metadata.json"
@@ -144,7 +210,17 @@ def get_dataset(name):
     elif output_type == "gtex_bulk":
         # Use your custom GCT reader
         data = read_gct(file_path)
-
+    elif output_type == "gtex_bulk_reads":
+        data = read_gct(file_path)
+        if normalize:
+            data = normalize_counts(data, method="log2cpm")
+    elif output_type == "tcga_counts":
+        # ── NEW: TCGA raw counts saved by fetch_tcga.py ──────────────────
+        # counts_raw.parquet  →  rows = samples, cols = HGNC gene names
+        data = pd.read_parquet(file_path)
+        ## normalize data
+        if normalize:
+            data = normalize_counts(data, method="log2cpm")
     else:
         raise ValueError(f"Unsupported file_output: {output_type}")
 
@@ -200,3 +276,42 @@ def read_gct(file_path) -> pd.DataFrame:
         return df
     except Exception as e:
         raise ValueError(f"Error reading GCT file {file_path}: {str(e)}")
+
+
+def load_tcga(project_suffix: str) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """
+    Convenience wrapper — load TCGA counts + sample metadata together.
+
+    Parameters
+    ----------
+    project_suffix : str
+        Lowercase project suffix, e.g. "luad", "lusc", "brca"
+
+    Returns
+    -------
+    counts : pd.DataFrame   — samples × genes (raw counts)
+    meta   : pd.DataFrame   — sample metadata (sample_type, is_tumor, …)
+
+    Example
+    -------
+    counts, meta = load_tcga("luad")
+    tumor   = counts[meta["is_tumor"]]
+    normal  = counts[~meta["is_tumor"]]
+    """
+    from pathlib import Path
+    import json
+
+    name = project_suffix.lower()
+    dataset_dir = get_data_path() / name
+
+    meta_json_path = dataset_dir / "metadata.json"
+    if not meta_json_path.exists():
+        raise FileNotFoundError(
+            f"Dataset '{name}' not found. "
+        )
+
+    counts = pd.read_parquet(dataset_dir / "counts_raw.parquet")
+    meta   = pd.read_parquet(dataset_dir / "metadata.parquet")
+
+    return counts, meta
+

@@ -1289,6 +1289,54 @@ unicode = ["unicodedata2 (>=17.0.0) ; python_version <= \"3.14\""]
 woff = ["brotli (>=1.0.1) ; platform_python_implementation == \"CPython\"", "brotlicffi (>=0.8.0) ; platform_python_implementation != \"CPython\"", "zopfli (>=0.1.4)"]
 
 [[package]]
+name = "formulaic"
+version = "1.2.1"
+description = "An implementation of Wilkinson formulas."
+optional = false
+python-versions = ">=3.9"
+groups = ["main"]
+files = [
+    {file = "formulaic-1.2.1-py3-none-any.whl", hash = "sha256:661d6d2467aa961b9afb3a1e2a187494239793c63eb729e422d1307afa98b43b"},
+    {file = "formulaic-1.2.1.tar.gz", hash = "sha256:dc79476baa2d811b35798893eb2f2c1e51edee8d7a9c1429b400e56f4e0beccc"},
+]
+
+[package.dependencies]
+interface-meta = ">=1.2.0"
+narwhals = ">=1.17"
+numpy = ">=1.20.0"
+pandas = ">=1.3"
+scipy = ">=1.6"
+typing-extensions = ">=4.2.0"
+wrapt = {version = ">=1.0", markers = "python_version < \"3.13\""}
+
+[package.extras]
+arrow = ["pyarrow (>=1)"]
+calculus = ["sympy (>=1.3,!=1.10)"]
+polars = ["polars (>=1)"]
+
+[[package]]
+name = "formulaic-contrasts"
+version = "1.0.0"
+description = "Build contrasts for models defined with formulaic"
+optional = false
+python-versions = ">=3.10"
+groups = ["main"]
+files = [
+    {file = "formulaic_contrasts-1.0.0-py3-none-any.whl", hash = "sha256:e1220d315cf446bdec9385375ca4da43896e4ba68114ebea1b2a37efa5d097f5"},
+    {file = "formulaic_contrasts-1.0.0.tar.gz", hash = "sha256:0a575a810bf1fba28938259d86a3ae2ae90cb9826fca84b9409085170862f701"},
+]
+
+[package.dependencies]
+formulaic = "*"
+pandas = "*"
+session-info = "*"
+
+[package.extras]
+dev = ["pre-commit", "twine (>=4.0.2)"]
+doc = ["docutils (>=0.8,<0.18.dev0 || >=0.20.dev0)", "ipykernel", "ipython", "myst-nb (>=1.1)", "pandas", "setuptools", "sphinx (>=4)", "sphinx-autodoc-typehints", "sphinx-book-theme (>=1)", "sphinx-copybutton", "sphinx-tabs", "sphinxcontrib-bibtex (>=1)", "sphinxext-opengraph", "statsmodels"]
+test = ["coverage", "numpy", "pytest"]
+
+[[package]]
 name = "fqdn"
 version = "1.5.1"
 description = "Validates fully-qualified domain names against RFC 1123, so that they are acceptable to modern bowsers"
@@ -1628,6 +1676,18 @@ doc = ["furo", "jaraco.packaging (>=9.3)", "jaraco.tidelift (>=1.4)", "rst.linke
 enabler = ["pytest-enabler (>=2.2)"]
 test = ["pygments", "pytest (>=6,!=8.1.*)"]
 type = ["pytest-mypy"]
+
+[[package]]
+name = "interface-meta"
+version = "1.3.0"
+description = "`interface_meta` provides a convenient way to expose an extensible API with enforced method signatures and consistent documentation."
+optional = false
+python-versions = ">=3.7,<4.0"
+groups = ["main"]
+files = [
+    {file = "interface_meta-1.3.0-py3-none-any.whl", hash = "sha256:de35dc5241431886e709e20a14d6597ed07c9f1e8b4bfcffde2190ca5b700ee8"},
+    {file = "interface_meta-1.3.0.tar.gz", hash = "sha256:8a4493f8bdb73fb9655dcd5115bc897e207319e36c8835f39c516a2d7e9d79a1"},
+]
 
 [[package]]
 name = "ipykernel"
@@ -2683,6 +2743,32 @@ files = [
 ]
 
 [[package]]
+name = "narwhals"
+version = "2.17.0"
+description = "Extremely lightweight compatibility layer between dataframe libraries"
+optional = false
+python-versions = ">=3.9"
+groups = ["main"]
+files = [
+    {file = "narwhals-2.17.0-py3-none-any.whl", hash = "sha256:2ac5307b7c2b275a7d66eeda906b8605e3d7a760951e188dcfff86e8ebe083dd"},
+    {file = "narwhals-2.17.0.tar.gz", hash = "sha256:ebd5bc95bcfa2f8e89a8ac09e2765a63055162837208e67b42d6eeb6651d5e67"},
+]
+
+[package.extras]
+cudf = ["cudf-cu12 (>=24.10.0)"]
+dask = ["dask[dataframe] (>=2024.8)"]
+duckdb = ["duckdb (>=1.1)"]
+ibis = ["ibis-framework (>=6.0.0)", "packaging", "pyarrow-hotfix", "rich"]
+modin = ["modin"]
+pandas = ["pandas (>=1.1.3)"]
+polars = ["polars (>=0.20.4)"]
+pyarrow = ["pyarrow (>=13.0.0)"]
+pyspark = ["pyspark (>=3.5.0)"]
+pyspark-connect = ["pyspark[connect] (>=3.5.0)"]
+sql = ["duckdb (>=1.1)", "sqlparse"]
+sqlframe = ["sqlframe (>=3.22.0,!=3.39.3)"]
+
+[[package]]
 name = "natsort"
 version = "8.4.0"
 description = "Simple yet flexible natural sorting in Python."
@@ -3564,6 +3650,32 @@ files = [
     {file = "pycparser-3.0-py3-none-any.whl", hash = "sha256:b727414169a36b7d524c1c3e31839a521725078d7b2ff038656844266160a992"},
     {file = "pycparser-3.0.tar.gz", hash = "sha256:600f49d217304a5902ac3c37e1281c9fe94e4d0489de643a9504c5cdfdfc6b29"},
 ]
+
+[[package]]
+name = "pydeseq2"
+version = "0.5.4"
+description = "A python implementation of DESeq2."
+optional = false
+python-versions = ">=3.11"
+groups = ["main"]
+files = [
+    {file = "pydeseq2-0.5.4-py3-none-any.whl", hash = "sha256:690458824f1c4df0d13dbf7e5bdc1298f6dfb444b04a6e2aef9e7d3f21ba30dd"},
+    {file = "pydeseq2-0.5.4.tar.gz", hash = "sha256:49d6f47840b5444ea2b69be7857c6c4e58f369066a0fb24bc52f7d3a62bbd92c"},
+]
+
+[package.dependencies]
+anndata = ">=0.11.0"
+formulaic = ">=1.0.2"
+formulaic-contrasts = ">=0.2.0"
+matplotlib = ">=3.9.0"
+numpy = ">=2.0.0"
+pandas = ">=2.2.0"
+scikit-learn = ">=1.4.0"
+scipy = ">=1.12.0"
+
+[package.extras]
+dev = ["coverage", "mypy (==1.18.2)", "numpydoc", "pandas-stubs", "pre-commit (>=2.16.0)", "pytest (>=8.4.0)", "ruff (==0.14.0)", "scipy-stubs"]
+doc = ["docutils", "gitpython (>=3.1.42)", "ipython", "jupyter", "myst-parser", "sphinx (>=8.0.0)", "sphinx-autobuild", "sphinx-autodoc-typehints", "sphinx-click", "sphinx-gallery", "sphinx-rtd-theme", "sphinxcontrib-bibtex", "sphinxcontrib-googleanalytics (>=0.5)", "texttable"]
 
 [[package]]
 name = "pydot"
@@ -4568,6 +4680,21 @@ nativelib = ["pyobjc (>=9.0) ; sys_platform == \"darwin\"", "pywin32 (>=305) ; s
 test = ["pytest (>=8)"]
 
 [[package]]
+name = "session-info"
+version = "1.0.1"
+description = "session_info outputs version information for modules loaded in the current session, Python, and the OS."
+optional = false
+python-versions = ">=3.6"
+groups = ["main"]
+files = [
+    {file = "session_info-1.0.1-py3-none-any.whl", hash = "sha256:451d191e51816070b9f21a6ff3f6eb5d6015ae2738e8db63ac4e6398260a5838"},
+    {file = "session_info-1.0.1.tar.gz", hash = "sha256:d71950d5a8ce7f7f7d5e86aa208c148c4e50b5440b77d5544d422b48e4f3ed41"},
+]
+
+[package.dependencies]
+stdlib_list = "*"
+
+[[package]]
 name = "session-info2"
 version = "0.4"
 description = "Print versions of imported packages."
@@ -4707,6 +4834,25 @@ scipy = ">=1.8,<1.9.2 || >1.9.2"
 build = ["cython (>=3.0.10)"]
 develop = ["colorama", "cython (>=3.0.10)", "cython (>=3.0.10,<4)", "flake8", "isort", "jinja2", "joblib", "matplotlib (>=3)", "pytest (>=7.3.0,<8)", "pytest-cov", "pytest-randomly", "pytest-xdist", "pywinpty ; os_name == \"nt\"", "setuptools_scm[toml] (>=8.0,<9.0)"]
 docs = ["ipykernel", "jupyter_client", "matplotlib", "nbconvert", "nbformat", "numpydoc", "pandas-datareader", "sphinx"]
+
+[[package]]
+name = "stdlib-list"
+version = "0.12.0"
+description = "A list of Python Standard Libraries (2.7 through 3.14)."
+optional = false
+python-versions = ">=3.9"
+groups = ["main"]
+files = [
+    {file = "stdlib_list-0.12.0-py3-none-any.whl", hash = "sha256:df2d11e97f53812a1756fb5510393a11e3b389ebd9239dc831c7f349957f62f2"},
+    {file = "stdlib_list-0.12.0.tar.gz", hash = "sha256:517824f27ee89e591d8ae7c1dd9ff34f672eae50ee886ea31bb8816d77535675"},
+]
+
+[package.extras]
+dev = ["build", "stdlib-list[doc,lint,test]"]
+doc = ["furo", "sphinx"]
+lint = ["mypy", "ruff"]
+support = ["sphobjinv"]
+test = ["coverage[toml]", "pytest", "pytest-cov"]
 
 [[package]]
 name = "svglib"
@@ -5213,4 +5359,4 @@ test = ["coverage (>=7.10)", "hypothesis", "mypy", "numpydoc", "packaging", "pyt
 [metadata]
 lock-version = "2.1"
 python-versions = "3.12.9"
-content-hash = "4fbf8572d83033daa6aff18c36775dcb35fab12153494b2d348ffc0c168078ea"
+content-hash = "f622bcfdcaca0a4955afbdd91b87acb9e3320b86c856b07a076b5216e49264db"

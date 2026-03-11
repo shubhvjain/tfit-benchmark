@@ -74,31 +74,6 @@ def claim_pending_genes(db_path: Path, worker_id: str, batch_size: int = 500) ->
 
     return genes  # no need for re-query, BEGIN IMMEDIATE guarantees exclusivity
 
-
-def mark_gene_done(db_path: Path, gene: str):
-    import time
-    conn = sqlite3.connect(db_path, timeout=30)
-    conn.execute("PRAGMA journal_mode=WAL")
-    conn.execute(
-        "UPDATE genes SET status='done', finished_at=? WHERE gene=?",
-        (time.time(), gene)
-    )
-    conn.commit()
-    conn.close()
-
-
-def mark_gene_failed(db_path: Path, gene: str, error: str):
-    import time
-    conn = sqlite3.connect(db_path, timeout=30)
-    conn.execute("PRAGMA journal_mode=WAL")
-    conn.execute(
-        "UPDATE genes SET status='failed', finished_at=?, error=? WHERE gene=?",
-        (time.time(), error[:500], gene)
-    )
-    conn.commit()
-    conn.close()
-
-
 def all_genes_done(db_path: Path) -> bool:
     conn = sqlite3.connect(db_path, timeout=30)
     row = conn.execute(
@@ -107,12 +82,103 @@ def all_genes_done(db_path: Path) -> bool:
     conn.close()
     return row[0] == 0
 
+def get_worker_db_path(paths: dict, worker_id: str) -> Path:
+    worker_dir = paths["temp_folder"] / "workers"
+    worker_dir.mkdir(parents=True, exist_ok=True)
+    return worker_dir / f"{worker_id}.db"
+
+
+def init_worker_db(worker_db_path: Path, genes: list[str]):
+    conn = sqlite3.connect(worker_db_path)
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS genes (
+            gene TEXT PRIMARY KEY,
+            status TEXT DEFAULT 'pending',
+            finished_at REAL,
+            error TEXT
+        )
+    """)
+    conn.executemany(
+        "INSERT OR IGNORE INTO genes (gene, status) VALUES (?, 'pending')",
+        [(g,) for g in genes]
+    )
+    conn.commit()
+    conn.close()
+
+
+def mark_gene_done_local(worker_db_path: Path, gene: str):
+    conn = sqlite3.connect(worker_db_path)
+    conn.execute(
+        "UPDATE genes SET status='done', finished_at=? WHERE gene=?",
+        (time.time(), gene)
+    )
+    conn.commit()
+    conn.close()
+
+
+def mark_gene_failed_local(worker_db_path: Path, gene: str, error: str):
+    conn = sqlite3.connect(worker_db_path)
+    conn.execute(
+        "UPDATE genes SET status='failed', finished_at=?, error=? WHERE gene=?",
+        (time.time(), error[:500], gene)
+    )
+    conn.commit()
+    conn.close()
+
+
+def flush_worker_results(worker_db: Path, db_path: Path, retries: int = 5):
+    wconn = sqlite3.connect(worker_db, timeout=10)
+    rows = wconn.execute(
+        "SELECT gene, status, error FROM genes WHERE status IN ('done', 'failed')"
+    ).fetchall()
+    wconn.close()
+
+    done = [(g,) for g, s, _ in rows if s == "done"]
+    failed = [(e, g) for g, s, e in rows if s == "failed"]
+
+    for attempt in range(retries):
+        try:
+            conn = sqlite3.connect(db_path, timeout=60)
+            conn.execute("PRAGMA journal_mode=WAL")
+            if done:
+                conn.executemany(
+                    "UPDATE genes SET status='done', finished_at=? WHERE gene=?",
+                    [(time.time(), g) for (g,) in done]
+                )
+            if failed:
+                conn.executemany(
+                    "UPDATE genes SET status='failed', finished_at=?, error=? WHERE gene=?",
+                    [(time.time(), (e or "")[:500], g) for e, g in failed]
+                )
+            conn.commit()
+            conn.close()
+            worker_db.unlink()
+            return
+        except Exception as e:
+            print(f"  flush attempt {attempt + 1}/{retries} failed: {e}")
+            time.sleep(2 ** attempt)
+
+    print(f"WARNING: flush failed after {retries} attempts. Worker DB kept at {worker_db}")
+    print("Run 'consolidate' to retry later")
+
+
+def consolidate_worker_dbs(paths: dict):
+    worker_dir = paths["temp_folder"] / "workers"
+    worker_dbs = list(worker_dir.glob("*.db")) if worker_dir.exists() else []
+    if not worker_dbs:
+        print("nothing to consolidate")
+        return
+    print(f"found {len(worker_dbs)} unflushed worker DB(s)")
+    for wdb in worker_dbs:
+        print(f"  flushing {wdb.name}...")
+        flush_worker_results(wdb, paths["db_file"])
+
 
 #  ------  Run  ------ 
 
 def run(exp_name: str, dataset_id: str, worker_id: str, batch_size: int):
-    paths = get_experiment_paths(exp_name, dataset_id,TOOL)
-    #print(paths)
+    paths = get_experiment_paths(exp_name, dataset_id, TOOL)
+
     if not paths["input_file"].exists():
         print(f"input.json not found: {paths['input_file']}")
         print("run exp_init.py first")
@@ -129,7 +195,6 @@ def run(exp_name: str, dataset_id: str, worker_id: str, batch_size: int):
     with open(paths["exp_file"]) as f:
         exp = json.load(f)
 
-    # claim genes from db
     targets = claim_pending_genes(paths["db_file"], worker_id, batch_size)
     if not targets:
         print("no pending genes, nothing to do")
@@ -140,10 +205,11 @@ def run(exp_name: str, dataset_id: str, worker_id: str, batch_size: int):
     paths["temp_folder"].mkdir(parents=True, exist_ok=True)
     paths["output_folder"].mkdir(parents=True, exist_ok=True)
 
+    worker_db = get_worker_db_path(paths, worker_id)
+    init_worker_db(worker_db, targets)
+
     config = build_config(exp_name, dataset_id, exp, targets)
     tfs = input_data["tf"]
-
-
     _, dataset = get_dataset(dataset_id)
 
     pipeline = Pipeline(
@@ -152,19 +218,18 @@ def run(exp_name: str, dataset_id: str, worker_id: str, batch_size: int):
         options=config,
         exp_title=f"{exp_name}_{dataset_id}"
     )
-
-    # run sequentially, update db per gene
+    print(f"Starting {worker_id} with {len(targets)} genes")
     for gene in targets:
         try:
             print(gene)
             pipeline.run_single_target(gene)
-            mark_gene_done(paths["db_file"], gene)
-            print(" done")
+            mark_gene_done_local(worker_db, gene)
+            print("  done")
         except Exception as e:
-            print("  error")
-            print(e)
-            mark_gene_failed(paths["db_file"], gene, str(e))
+            print("  error:", e)
+            mark_gene_failed_local(worker_db, gene, str(e))
 
+    flush_worker_results(worker_db, paths["db_file"])
     print("done")
 
 
@@ -329,18 +394,26 @@ def reset_failed(db_path: Path):
     conn.close()
     print(f"reset {row[0]} failed genes to pending")
 
-def reset_claimed(db_path: Path, worker_id: str):
-    """Reset all claimed genes by a specific worker back to pending."""
+def reset_claimed(db_path: Path, worker_id: str = None):
+    """Reset claimed genes back to pending. If worker_id is None, resets all claimed genes."""
     conn = sqlite3.connect(db_path, timeout=30)
     conn.execute("PRAGMA journal_mode=WAL")
-    conn.execute(
-        "UPDATE genes SET status='pending', worker=NULL, started_at=NULL, finished_at=NULL  WHERE status='claimed' AND worker=?",
-        (worker_id,)
-    )
+    if worker_id:
+        conn.execute(
+            "UPDATE genes SET status='pending', worker=NULL, started_at=NULL, finished_at=NULL WHERE status='claimed' AND worker=?",
+            (worker_id,)
+        )
+    else:
+        conn.execute(
+            "UPDATE genes SET status='pending', worker=NULL, started_at=NULL, finished_at=NULL WHERE status='claimed'"
+        )
     conn.commit()
     row = conn.execute("SELECT COUNT(*) FROM genes WHERE status='pending'").fetchone()
     conn.close()
-    print(f"reset genes claimed by '{worker_id}' to pending, total pending now: {row[0]}")
+    if worker_id:
+        print(f"reset genes claimed by '{worker_id}' to pending, total pending now: {row[0]}")
+    else:
+        print(f"reset all claimed genes to pending, total pending now: {row[0]}")
 
 
 #  ------  CLI  ------ 
@@ -364,10 +437,12 @@ def main():
     reset_p = subparsers.add_parser("reset_failed", parents=[parent_parser])
     
     rc_p = subparsers.add_parser("reset_claimed", parents=[parent_parser])
-    rc_p.add_argument("--worker", required=True, help="worker id to reset")
+    rc_p.add_argument("--worker", required=False, help="worker id to reset")
     
     status_p = subparsers.add_parser("update_status", parents=[parent_parser])
     status_p.add_argument("--read", action="store_true", help="read pkl files to check internal success/failure (slower but more accurate)")
+
+    consolidate_p = subparsers.add_parser("consolidate", parents=[parent_parser])
     
     args = parser.parse_args()
     
@@ -385,6 +460,7 @@ def main():
     elif args.action == "reset_claimed":
         paths = get_experiment_paths(args.id, args.dataset, TOOL)
         reset_claimed(paths["db_file"], args.worker)
+    
 
 if __name__ == "__main__":
     main()

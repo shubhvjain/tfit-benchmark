@@ -196,6 +196,7 @@ def run(exp_name: str, dataset_id: str, worker_id: str, batch_size: int):
         exp = json.load(f)
 
     targets = claim_pending_genes(paths["db_file"], worker_id, batch_size)
+    targets = [g for g in targets if g and g.strip()]
     if not targets:
         print("no pending genes, nothing to do")
         return

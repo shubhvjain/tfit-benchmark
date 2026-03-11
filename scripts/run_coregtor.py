@@ -36,45 +36,43 @@ def build_config(exp_name: str, dataset_id: str, exp: dict, targets: list[str]) 
 #  ------  Status db  ------ 
 
 def claim_pending_genes(db_path: Path, worker_id: str, batch_size: int = 500) -> list[str]:
-    """Atomically claim a batch of pending genes. Returns claimed gene list."""
-    import time
-    STALE_TIMEOUT = 60 * 60 * 2  # 2 hours - adjust to your expected job duration
-    
+    STALE_TIMEOUT = 60 * 60 * 2
+
     conn = sqlite3.connect(db_path, timeout=30)
     conn.execute("PRAGMA journal_mode=WAL")
-    
-    # Reset stale claimed genes (worker died/crashed)
-    conn.execute(
-        "UPDATE genes SET status='pending', worker=NULL WHERE status='claimed' AND started_at < ?",
-        (time.time() - STALE_TIMEOUT,)
-    )
-    conn.commit()
 
+    try:
+        conn.execute("BEGIN IMMEDIATE")  # blocks other writers, allows readers
 
-    # get pending genes
-    rows = conn.execute(
-        "SELECT gene FROM genes WHERE status='pending' LIMIT ?",
-        (batch_size,)
-    ).fetchall()
+        # Reset stale claimed genes
+        conn.execute(
+            "UPDATE genes SET status='pending', worker=NULL WHERE status='claimed' AND started_at < ?",
+            (time.time() - STALE_TIMEOUT,)
+        )
 
-    if not rows:
+        rows = conn.execute(
+            "SELECT gene FROM genes WHERE status='pending' LIMIT ?",
+            (batch_size,)
+        ).fetchall()
+
+        if not rows:
+            conn.execute("COMMIT")
+            return []
+
+        genes = [r[0] for r in rows]
+        conn.executemany(
+            "UPDATE genes SET status='claimed', worker=?, started_at=? WHERE gene=? AND status='pending'",
+            [(worker_id, time.time(), g) for g in genes]
+        )
+        conn.execute("COMMIT")
+
+    except sqlite3.OperationalError:
+        conn.execute("ROLLBACK")
+        raise
+    finally:
         conn.close()
-        return []
 
-    genes = [r[0] for r in rows]
-    conn.executemany(
-        "UPDATE genes SET status='claimed', worker=?, started_at=? WHERE gene=? AND status='pending'",
-        [(worker_id, time.time(), g) for g in genes]
-    )
-    conn.commit()
-
-    # confirm how many we actually claimed (race condition guard)
-    claimed = conn.execute(
-        f"SELECT gene FROM genes WHERE worker=? AND status='claimed'",
-        (worker_id,)
-    ).fetchall()
-    conn.close()
-    return [r[0] for r in claimed]
+    return genes  # no need for re-query, BEGIN IMMEDIATE guarantees exclusivity
 
 
 def mark_gene_done(db_path: Path, gene: str):

@@ -70,7 +70,6 @@ def cmd_init(exp=None, dataset=None, tool="coregtor", result_name=None, n_bucket
     if missing:
         raise ValueError(f"Input CSV missing required columns: {missing}")
 
-    df = pd.read_csv(input_path)
     chunks = np.array_split(df, n_buckets)
 
     written = 0

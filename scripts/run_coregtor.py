@@ -360,15 +360,15 @@ def update_run_status(db_path: Path, checkpoint_dir: Path, check_internal: bool 
             print()  # newline after progress line
 
         # Reset stale claimed jobs
-        stale = conn.execute("SELECT gene FROM genes WHERE status='claimed'").fetchall()
-        stale_genes = [(g,) for (g,) in stale if g not in completed_on_disk]
-        if stale_genes:
-            print(f"Resetting {len(stale_genes)} stale claimed genes to pending...")
-            conn.executemany(
-                "UPDATE genes SET status='pending', worker=NULL WHERE gene=?",
-                stale_genes,
-            )
-            conn.commit()
+        # stale = conn.execute("SELECT gene FROM genes WHERE status='claimed'").fetchall()
+        # stale_genes = [(g,) for (g,) in stale if g not in completed_on_disk]
+        # if stale_genes:
+        #     print(f"Resetting {len(stale_genes)} stale claimed genes to pending...")
+        #     conn.executemany(
+        #         "UPDATE genes SET status='pending', worker=NULL WHERE gene=?",
+        #         stale_genes,
+        #     )
+        #     conn.commit()
 
         # Summary
         rows = conn.execute(
@@ -379,8 +379,12 @@ def update_run_status(db_path: Path, checkpoint_dir: Path, check_internal: bool 
             print(f"  {status}: {count}")
 
     finally:
-        conn.execute("PRAGMA wal_checkpoint(TRUNCATE)")
-        conn.close()
+        try:
+            conn.execute("PRAGMA wal_checkpoint(TRUNCATE)")
+        except sqlite3.Error as e:
+            print(f"Skipping wal_checkpoint due to error: {e}")
+        finally:
+            conn.close()
 
 
 def reset_failed(db_path: Path):

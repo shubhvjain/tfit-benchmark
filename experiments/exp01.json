@@ -14,7 +14,9 @@
     "kidney_cortex",
     "lung",
     "muscle_skeletal",
-    "thyroid"
+    "thyroid",
+    "luad",
+    "lusc"
   ],
   "target": {
     "type": "no_tf",

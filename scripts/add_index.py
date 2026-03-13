@@ -145,6 +145,60 @@ def cmd_run_bucket(exp=None, dataset=None, tool="coregtor", result_name=None, bu
 # Step 3: collect
 # ---------------------------------------------------------------------------
 
+def cmd_collect(exp=None, dataset=None, tool="coregtor", result_name=None, output=None, force=False):
+    if exp is None or dataset is None or tool is None or result_name is None:
+        raise ValueError("Missing data")
+
+    input_file = f"result_{result_name}"
+    bucket_dir = get_temp_path() / f"{exp}/{dataset}/{tool}/{input_file}"
+
+    status_file = bucket_dir / "status.json"
+    if not status_file.exists():
+        raise ValueError("Folder not setup. Run init first.")
+
+    status = json.loads(status_file.read_text())
+    n_buckets = status["n_buckets"]
+
+    # Check for in-progress or missing buckets
+    incomplete = []
+    for bid in range(n_buckets):
+        progress_file = bucket_dir / f"bucket_{bid:02d}.inprogress"
+        bucket_path = _bucket_path(bucket_dir, bid)
+        if progress_file.exists():
+            incomplete.append((bid, "in-progress"))
+        elif not bucket_path.exists():
+            incomplete.append((bid, "missing"))
+
+    if incomplete and not force:
+        for bid, reason in incomplete:
+            print(f"  Bucket {bid:02d}: {reason}")
+        raise ValueError(
+            f"{len(incomplete)} bucket(s) are not ready. Use force=True to collect anyway."
+        )
+    elif incomplete:
+        print(f"Warning: {len(incomplete)} bucket(s) incomplete — collecting anyway (force=True).")
+
+    # Read and concatenate all available buckets
+    frames = []
+    for bid in range(n_buckets):
+        bucket_path = _bucket_path(bucket_dir, bid)
+        if not bucket_path.exists():
+            print(f"  Skipping missing bucket {bid:02d}")
+            continue
+        frames.append(pd.read_csv(bucket_path))
+
+    if not frames:
+        raise ValueError("No bucket data found to collect.")
+
+    result = pd.concat(frames, ignore_index=True, join="outer")
+    
+    if output is None:
+        output_dir = get_output_path() / f"{exp}/{dataset}/{tool}"
+        output_dir.mkdir(parents=True, exist_ok=True)
+        output = output_dir / f"{input_file}_indices.csv"
+
+    result.to_csv(output, index=False)
+    print(f"Collected {len(result)} rows from {len(frames)} buckets -> {output}")
 
 
 # ---------------------------------------------------------------------------
@@ -181,10 +235,13 @@ def main():
 
     # -- collect --
     p_col = sub.add_parser("collect", help="Flatten results into CSV files")
-    p_col.add_argument("--index",         required=True,          help="Comma-separated index names to include")
-    p_col.add_argument("--bucket-dir",    default="buckets",      help="Bucket directory (default: buckets/)")
-    p_col.add_argument("--output",        default="results.csv",  help="Output CSV path (default: results.csv)")
-    p_col.add_argument("--force-collect", action="store_true",    help="Export even if some indexes are incomplete")
+    p_col.add_argument("--id",      required=True,  help="exp name")
+    p_col.add_argument("--dataset", required=True,  help="dataset name")
+    p_col.add_argument("--tool",    required=False, default="coregtor", help="tool name")
+    p_col.add_argument("--result",  required=True,  help="result name")
+    p_col.add_argument("--rerun",      action="store_true", help="Recompute even if already done")
+
+
 
     args = parser.parse_args()
 
@@ -194,8 +251,7 @@ def main():
     elif args.command == "run":
         cmd_run_bucket(args.id,args.dataset,args.tool,args.result,args.bucket,args.rerun)
     elif args.command == "collect":
-        cmd_collect(args)
-
+        cmd_collect(args.id, args.dataset, args.tool, args.result, args.output, args.force_collect)
 
 if __name__ == "__main__":
     main()

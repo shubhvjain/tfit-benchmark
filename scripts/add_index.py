@@ -145,7 +145,7 @@ def cmd_run_bucket(exp=None, dataset=None, tool="coregtor", result_name=None, bu
 # Step 3: collect
 # ---------------------------------------------------------------------------
 
-def cmd_collect(exp=None, dataset=None, tool="coregtor", result_name=None, output=None, force=False):
+def cmd_collect(exp=None, dataset=None, tool="coregtor", result_name=None,  force=False):
     if exp is None or dataset is None or tool is None or result_name is None:
         raise ValueError("Missing data")
 
@@ -192,10 +192,10 @@ def cmd_collect(exp=None, dataset=None, tool="coregtor", result_name=None, outpu
 
     result = pd.concat(frames, ignore_index=True, join="outer")
     
-    if output is None:
-        output_dir = get_output_path() / f"{exp}/{dataset}/{tool}"
-        output_dir.mkdir(parents=True, exist_ok=True)
-        output = output_dir / f"{input_file}_indices.csv"
+    
+    output_dir = get_output_path() / f"{exp}/{dataset}/{tool}"
+    output_dir.mkdir(parents=True, exist_ok=True)
+    output = output_dir / f"{input_file}_indices.csv"
 
     result.to_csv(output, index=False)
     print(f"Collected {len(result)} rows from {len(frames)} buckets -> {output}")
@@ -251,7 +251,7 @@ def main():
     elif args.command == "run":
         cmd_run_bucket(args.id,args.dataset,args.tool,args.result,args.bucket,args.rerun)
     elif args.command == "collect":
-        cmd_collect(args.id, args.dataset, args.tool, args.result, args.output, args.force_collect)
+        cmd_collect(args.id, args.dataset, args.tool, args.result, args.rerun)
 
 if __name__ == "__main__":
     main()

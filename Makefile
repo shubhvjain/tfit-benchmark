@@ -134,6 +134,9 @@ run-analysis: ## Run an analysis file. Pass id=<id>
 nb:
 	poetry run jupyter lab
 
+web1:
+	poetry run flask --app web/app.py run
+
 pr:
 	poetry run $(cmd)
 

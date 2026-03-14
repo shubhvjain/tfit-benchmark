@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="en" data-bs-theme="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Explorer</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <script src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+  </head>
+  <body>
+    <div class="d-flex" id="app">
+      <div class="p-2">
+        <div class="card">
+          <div class="card-body">
+            <label>Search Type:</label>
+            <select v-model="mode" class="form-select mb-3">
+              <option v-for="(cfg, key) in modes" :key="key" :value="key">
+                {{cfg.label}}
+              </option>
+            </select>
+
+            <!-- Gene field -->
+            <div v-if="currentFields.includes('gene')">
+              <label>Genes:</label>
+              <input
+                v-model="gene"
+                placeholder="genes, comma sep"
+                class="form-control mb-3"
+              />
+            </div>
+
+            <!-- Dataset field -->
+            <div v-if="currentFields.includes('dataset')">
+              <label>Datasets:</label>
+              <div v-for="(d, i) in datasets" :key="i" class="form-check">
+                <input
+                  type="checkbox"
+                  v-model="selected"
+                  :value="d.value"
+                  class="form-check-input"
+                  :id="'ds-'+i"
+                />
+                <label class="form-check-label" :for="'ds-'+i"
+                  >{{d.title}}</label
+                >
+              </div>
+            </div>
+
+            <!-- Experiment field -->
+            <div v-if="currentFields.includes('experiment')">
+              <label>Experiments:</label>
+              <div v-for="(e, i) in experiments" :key="i" class="form-check">
+                <input
+                  type="checkbox"
+                  v-model="selected"
+                  :value="e.value"
+                  class="form-check-input"
+                  :id="'exp-'+i"
+                />
+                <label class="form-check-label" :for="'exp-'+i"
+                  >{{e.title}}</label
+                >
+              </div>
+            </div>
+
+            <button @click="search" class="btn btn-primary w-100 mt-3">
+              Search
+            </button>
+
+            <div class="form-check mt-2">
+              <input
+                type="checkbox"
+                v-model="appendResults"
+                class="form-check-input"
+                id="appendCheck"
+              />
+              <label class="form-check-label" for="appendCheck"
+                >Append Results</label
+              >
+            </div>
+            <button
+              @click="results = []"
+              class="btn btn-outline-secondary w-100 mt-2"
+            >
+              Clear Results
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="p-2 flex-grow-1">
+        <!-- <pre v-if="query">{{JSON.stringify(query, null, 2)}}</pre> -->
+        <!-- <p v-else>No Results to display</p> -->
+
+        <div v-for="(r, i) in results" :key="i" class="card mb-3">
+          <div class="card-body">
+            <!-- Failed result -->
+            <div v-if="!r.success" class="text-warning">{{ r.message }}</div>
+
+            <!-- network1 -->
+            <div v-else-if="r.type === 'network1'">
+              <h6 class="card-title">{{ r.title }}</h6>
+              <div
+                :id="'net-'+i"
+                style="height: 300px; border: 1px solid #444"
+              ></div>
+            </div>
+
+            <!-- fallback for unknown types -->
+            <div v-else>
+              <pre>{{ JSON.stringify(r, null, 2) }}</pre>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+      Vue.createApp({
+        data() {
+          return {
+            mode: "coregulators",
+            gene: "",
+            selected: [],
+            appendResults: false,
+            modes: {
+              coregulators: {
+                label: "Coregulator",
+                fields: ["gene", "dataset"],
+              },
+              differential_coregulation: {
+                label: "Differential Coregulation",
+                fields: ["gene", "experiment"],
+              },
+            },
+
+            datasets: [
+              { title: "Amygdala", value: "amygdala" },
+              { title: "Bladder", value: "bladder" },
+              { title: "Whole Blood", value: "blood" },
+              { title: "Brain - Frontal Cortex (BA9)", value: "cortex-ba9" },
+              { title: "Brain - Hypothalamus", value: "hypothalamus" },
+              {
+                title: "Heart - Left Ventricle",
+                value: "heart_left_ventricle",
+              },
+              {
+                title: "Heart - Atrial Appendage",
+                value: "heart_atrial_appendage",
+              },
+              { title: "Kidney - Cortex", value: "kidney_cortex" },
+              { title: "Lung", value: "lung" },
+              { title: "Muscle - Skeletal", value: "muscle_skeletal" },
+              { title: "Thyroid", value: "thyroid" },
+              // { title: "Dataset B", value: "luad" },
+              // { title: "Amygdala", value: "lusc" },
+            ],
+            experiments: [
+              { title: "Exp 1", value: "exp1" },
+              { title: "Exp 2", value: "exp2" },
+              { title: "Exp 3", value: "exp3" },
+            ],
+
+            query: null,
+            results: [],
+          };
+        },
+
+        computed: {
+          currentFields() {
+            return this.modes[this.mode]?.fields ?? [];
+          },
+        },
+
+        watch: {
+          mode() {
+            this.selected = [];
+          },
+        },
+
+        methods: {
+          async search() {
+            const fields = this.currentFields;
+            const payload = { mode: this.mode };
+            if (fields.includes("gene"))
+              payload.gene = this.gene.split(",").map((g) => g.trim());
+            if (fields.includes("dataset")) payload.dataset = this.selected;
+            if (fields.includes("experiment"))
+              payload.experiment = this.selected;
+
+            const res = await fetch("/api/search", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(payload),
+            });
+            // this.query = await res.json();
+            const json = await res.json();
+            this.query = json;
+            // this.results = json.results ?? [];
+
+            const newResults = json.results ?? [];
+            this.results = this.appendResults ? [...this.results, ...newResults] : newResults;
+            await this.$nextTick();
+            this.renderNetworks();
+          },
+
+          renderNetworks() {
+            this.results.forEach((r, i) => {
+              if (!r.success || r.type !== "network1") return;
+              const container = document.getElementById("net-" + i);
+              const nodes = new vis.DataSet([
+                ...r.data.sources.map((s, j) => ({ id: "s" + j, label: s })),
+                { id: "target", label: r.data.target, color: "#0d6efd" },
+              ]);
+              const edges = new vis.DataSet(
+                r.data.sources.map((_, j) => ({ from: "s" + j, to: "target" })),
+              );
+              new vis.Network(container, { nodes, edges }, { physics: false });
+            });
+          },
+        },
+      }).mount("#app");
+    </script>
+  </body>
+</html>

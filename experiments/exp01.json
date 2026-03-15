@@ -65,7 +65,7 @@
       "save_all_clusters":true,
       "clustering": [
         {
-          "id": "default",
+          "id": "r1",
           "matrix_id": "default",
           "method": "hierarchical_clustering",
           "method_options": {

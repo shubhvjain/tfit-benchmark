@@ -8,5 +8,5 @@ import os
 
 if __name__ == "__main__":
     data_path = os.getenv("DATA_PATH")
-    install(data_path)
-    build(data_path,n_jobs=-1, batch_size=200000)
+    # install(data_path)
+    build(data_path,n_jobs=-1, batch_size=25000)

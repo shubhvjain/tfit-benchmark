@@ -332,29 +332,46 @@ class PipelineResults:
                 for target in targets
             )
 
-            # now save whats needed
-            # first save the results
-            # all_best_results = [ r["best_cluster"] for r in all_results]
-            all_best_results = [r["best_cluster"] for r in all_results if r is not None and r["best_cluster"] is not None]
-            #print(all_best_results)
+            valid_results = [r for r in all_results if r is not None]
+            print(f"Valid results: {len(valid_results)} / {len(all_results)}")
+
+            # Extract best clusters
+            all_best_results = [
+                r["best_cluster"] 
+                for r in valid_results 
+                if r["best_cluster"] is not None
+            ]
+            
+            # Save best clusters
             combined = pd.DataFrame(all_best_results)
-            #print(combined)
             combined.to_csv(out, index=False)
             print(f"Saved {len(combined)} rows to {out}")
 
+            # Save similarity matrices
             save_sim = self.options.get("save_similarity_matrix", False)
-            sim_out = self.output_dir / f"sim_{method_id}.json.gz"
-            if not sim_out.exists():
-                sims = {item["target"]:item["sim_matrix"].to_dict(orient='index') for item in all_results }
-                with gzip.open(sim_out, 'wt') as f:
-                    json.dump(sims, f, indent=0)    
+            if save_sim:
+                sim_out = self.output_dir / f"sim_{method_id}.json.gz"
+                if not sim_out.exists():
+                    sims = {
+                        item["target"]: item["sim_matrix"].to_dict(orient='index') 
+                        for item in valid_results 
+                        if item["sim_matrix"] is not None
+                    }
+                    with gzip.open(sim_out, 'wt') as f:
+                        json.dump(sims, f, indent=0)
 
+            # Save all clusters
             save_all_clusters = self.options.get("save_all_clusters", False)
             if save_all_clusters:
-                combined_df = pd.concat([item["all_clusters"] for item in all_results], ignore_index=True)
-                
-                out_all_c = self.output_dir / f"clusters_{method_id}.parquet"
-                combined_df.to_parquet(out_all_c, compression='gzip', index=False)
+                all_clusters_list = [
+                    item["all_clusters"] 
+                    for item in valid_results 
+                    if item["all_clusters"] is not None and not item["all_clusters"].empty
+                ]
+                if all_clusters_list:
+                    combined_df = pd.concat(all_clusters_list, ignore_index=True)
+                    out_all_c = self.output_dir / f"clusters_{method_id}.parquet"
+                    combined_df.to_parquet(out_all_c, compression='gzip', index=False)
 
 
     def _process_single_target(self, target: str,method_config:str) -> Dict[str, pd.DataFrame]:

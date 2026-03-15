@@ -6,7 +6,8 @@ import pandas as pd
 
 # from util import load_env
 from gene_expression import Generate_Reports
-
+from DGE import run as DGE
+from FEA import run as FEA
 
 def get_file(id):
     file_path = Path(os.getenv("ANALYSIS_INPUT_PATH"))/f"{id}.json"
@@ -29,9 +30,16 @@ def gtex_stats(id, config):
     Generate_Reports(dataset_list=config["datasets"],rerun_plots=config["rerun_plot"],rerun_summary=config["rerun_summary"],output_dir=output_dir)
     
 
+def disease_case_study(id,config):
+    """   """
+    output_dir = Path(os.getenv("ANALYSIS_OUTPUT_PATH"))/f"{id}"
+    results_df,log = DGE(config,output_dir)
+    FEA(results_df, output_dir, config, log)
+
 
 RUN_REGISTRY = {
-    "gtex_stats":gtex_stats
+    "gtex_stats":gtex_stats,
+    "disease_case_study":disease_case_study
 }
 
 

@@ -1,0 +1,21 @@
+{
+  "type": "disease_case_study",
+  "target": {
+    "type": "no_tf",
+    "non_zero_threshold": 0.8
+  },
+  "tf": {
+    "non_zero_threshold": 0.8
+  },
+
+  "disease_dataset":"luad",
+  "normal_dataset":"lung_reads",
+  "disease_exp":"",
+  "normal_exp":"",
+
+  "rerun":false,
+  "select_top_targets_count":100,
+  "enrichment_top_n": 300,
+  "padj_thresh": 0.05,
+  "lfc_thresh": 1.0
+}

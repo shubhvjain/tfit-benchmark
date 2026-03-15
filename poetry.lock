@@ -4948,14 +4948,14 @@ typing = ["mypy (>=1.6,<2.0)", "traitlets (>=5.11.1)"]
 
 [[package]]
 name = "tfitpy"
-version = "0.5.11"
+version = "0.6.0"
 description = "TFit : Assessing the combinatorial potential of Transcription Factors in Gene Regulation"
 optional = false
 python-versions = "!=3.14.1,>=3.11"
 groups = ["main"]
 files = [
-    {file = "tfitpy-0.5.11-py3-none-any.whl", hash = "sha256:1e0a1159cb3e71a95a2d24fb98c783750c837e39bc9e43195793ff4228081f67"},
-    {file = "tfitpy-0.5.11.tar.gz", hash = "sha256:44b6acd9c367a6a1cb9fa4c340ddeee5118748ba7f9065718567afe9f2b5adcb"},
+    {file = "tfitpy-0.6.0-py3-none-any.whl", hash = "sha256:98f3524ffac2d532dfafdf5e713609f56a2bf197f998983bd5e69c2e35c37f72"},
+    {file = "tfitpy-0.6.0.tar.gz", hash = "sha256:4ef5f733fa8b1a4a96c652180b6f2aa6d38dc114a1b4c48035a71d60647b69ca"},
 ]
 
 [package.dependencies]
@@ -5425,4 +5425,4 @@ test = ["coverage (>=7.10)", "hypothesis", "mypy", "numpydoc", "packaging", "pyt
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.12,<3.13"
-content-hash = "c4ca05f241f728496071f29620e2de416d628b183e98ef76ea26d97ec98320a7"
+content-hash = "a2216980219311a6a8e4c2fd36c064ba068446566562aed4c70af2f9d3516302"

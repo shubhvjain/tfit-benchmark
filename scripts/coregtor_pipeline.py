@@ -327,7 +327,7 @@ class PipelineResults:
             if out.exists() and not rerun_files:
                 print("Result file already exists")
                 continue
-            all_results = Parallel(n_jobs=n_jobs, verbose=100)(
+            all_results = Parallel(n_jobs=n_jobs, verbose=0)(
                 delayed(self._process_single_target)(target,m)
                 for target in targets
             )

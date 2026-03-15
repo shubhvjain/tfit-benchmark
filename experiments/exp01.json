@@ -61,8 +61,8 @@
   },
   "tool_result": {
     "coregtor": {
-      "save_similarity_matrix":true,
-      "save_all_clusters":true,
+      "save_similarity_matrix":false,
+      "save_all_clusters":false,
       "clustering": [
         {
           "id": "r1",

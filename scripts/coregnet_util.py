@@ -107,7 +107,6 @@ def coregnet_results(exp_name,dataset_id):
             "target":      target,
             "sources":     sources_str,
             "n_sources":   n_sources,
-            "n_percent":   100.0,
             "method":      method_label
         })
 

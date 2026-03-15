@@ -286,7 +286,6 @@ def hierarchical_clustering(
             'target': target_gene,
             'sources': ';'.join(gene_names),
             'n_sources': len(gene_names),
-            'n_percent': 100.0,
             'silhouette_score': 0.0,
         }])
         optimal_cluster = single_row.iloc[0].to_dict() if not single_row.empty else None

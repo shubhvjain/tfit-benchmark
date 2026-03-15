@@ -95,19 +95,46 @@
       <div class="p-2 flex-grow-1">
         <!-- <pre v-if="query">{{JSON.stringify(query, null, 2)}}</pre> -->
         <!-- <p v-else>No Results to display</p> -->
-
-        <div v-for="(r, i) in results" :key="i" class="card mb-3">
+        <div class="row">
+           <div v-for="(r, i) in results" :key="i" class="col-12 card mb-3">
           <div class="card-body">
             <!-- Failed result -->
             <div v-if="!r.success" class="text-warning">{{ r.message }}</div>
 
             <!-- network1 -->
-            <div v-else-if="r.type === 'network1'">
+            <div v-else-if="r.type === 'coregulator_network'">
               <h6 class="card-title">{{ r.title }}</h6>
               <div
                 :id="'net-'+i"
-                style="height: 300px; border: 1px solid #444"
+                style="height: 250px; border: 1px solid #444"
               ></div>
+              <div>
+                Sources :
+                <ul style="list-style: none;">
+                  <li v-for="s in r.data.sources" style="float: left;margin: 5px;" > {{s}}</li>
+                </ul>
+              </div>
+            </div>
+
+            <!-- clusters_comparison -->
+            <div v-else-if="r.type === 'clusters_comparison'">
+              <h6 class="card-title">{{ r.title }}</h6>
+              <div style="overflow-x:auto;">
+               <table class="table table-sm table-striped table-bordered small" style="table-layout:fixed; width:100%; word-wrap:break-word; white-space:normal;">
+                  <thead>
+                    <tr>
+                      <th v-for="col in Object.keys(r.data[0])" :key="col" style="width:120px;">{{ col }}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="(row, ri) in r.data" :key="ri">
+                      <td v-for="col in Object.keys(r.data[0])" :key="col">
+                        {{ Array.isArray(row[col]) ? row[col].join(', ') : (row[col]?.parsedValue ?? row[col]) }}
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
             </div>
 
             <!-- fallback for unknown types -->
@@ -116,6 +143,8 @@
             </div>
           </div>
         </div>
+        </div>
+       
       </div>
     </div>
 
@@ -131,6 +160,10 @@
             modes: {
               coregulators: {
                 label: "Coregulator",
+                fields: ["gene", "dataset"],
+              },
+              coregulator_clusters: {
+                label: "Coregulator Clusters",
                 fields: ["gene", "dataset"],
               },
               differential_coregulation: {
@@ -211,7 +244,7 @@
 
           renderNetworks() {
             this.results.forEach((r, i) => {
-              if (!r.success || r.type !== "network1") return;
+              if (!r.success || r.type !== "coregulator_network") return;
               const container = document.getElementById("net-" + i);
               const nodes = new vis.DataSet([
                 ...r.data.sources.map((s, j) => ({ id: "s" + j, label: s })),

@@ -6,7 +6,7 @@ from flask import Flask, request, jsonify, render_template
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
-from search import coregulators
+from search import coregulators,coregulator_clusters
 
 app = Flask(__name__)
 
@@ -16,7 +16,8 @@ def index():
     return app.send_static_file("index.html")
 
 mode_registry = {
-    "coregulators": coregulators
+    "coregulators": coregulators,
+    "coregulator_clusters":coregulator_clusters
 }
 
 @app.route("/api/search", methods=["POST"])

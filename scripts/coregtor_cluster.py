@@ -289,7 +289,9 @@ def hierarchical_clustering(
             'n_percent': 100.0,
             'silhouette_score': 0.0,
         }])
-        return None, single_row
+        optimal_cluster = single_row.iloc[0].to_dict() if not single_row.empty else None
+        return None, single_row, optimal_cluster
+        # return None, single_row
 
     # Count how many clustering methods specified
     methods_specified = sum([

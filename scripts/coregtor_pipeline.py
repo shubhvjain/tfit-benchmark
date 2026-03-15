@@ -334,7 +334,8 @@ class PipelineResults:
 
             # now save whats needed
             # first save the results
-            all_best_results = [ r["best_cluster"] for r in all_results]
+            # all_best_results = [ r["best_cluster"] for r in all_results]
+            all_best_results = [r["best_cluster"] for r in all_results if r is not None and r["best_cluster"] is not None]
             #print(all_best_results)
             combined = pd.DataFrame(all_best_results)
             #print(combined)
@@ -389,6 +390,8 @@ class PipelineResults:
                 return None
 
             clusters_df["note"] = f"{self.title}-coregtor-{method_id}"
+            if best_cluster is not None:
+                best_cluster["note"] = f"{self.title}-coregtor-{method_id}"
             best_cluster["note"] = f"{self.title}-coregtor-{method_id}"
             results["all_clusters"] = clusters_df
             results["best_cluster"] = best_cluster

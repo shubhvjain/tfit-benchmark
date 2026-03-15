@@ -61,13 +61,16 @@
   },
   "tool_result": {
     "coregtor": {
+      "save_similarity_matrix":true,
+      "save_all_clusters":true,
       "clustering": [
         {
           "id": "default",
           "matrix_id": "default",
           "method": "hierarchical_clustering",
           "method_options": {
-            "auto_threshold": "inconsistency"
+            "auto_threshold": "inconsistency",
+            "cluster_selection":"silhouette"
           }
         }
       ]

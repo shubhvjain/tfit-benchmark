@@ -1,4 +1,5 @@
 import json
+import gzip
 import time
 import joblib
 import jsonschema
@@ -309,59 +310,89 @@ class PipelineResults:
     def generate_clusters_file(self):
         targets = self.get_successful_targets()
         n_jobs = self.options.get("result_generation", {}).get("n_jobs", 4)
+        rerun_files = self.options.get("result_generation", {}).get("rerun", False)
         print(f"processing {len(targets)} targets with {n_jobs} workers")
 
-        all_target_results = Parallel(n_jobs=n_jobs, verbose=1)(
-            delayed(self._process_single_target)(target)
-            for target in targets
-        )
 
-        method_results = {}
-        for target_result in all_target_results:
-            if target_result is None:
-                continue
-            for method_id, df in target_result.items():
-                if df is not None:
-                    method_results.setdefault(method_id, []).append(df)
-
-        for method_id, dfs in method_results.items():
-            if not dfs:
-                continue
-            combined = pd.concat(dfs, ignore_index=True)
+        methods_set = self.options.get("clustering",[])
+        if len(methods_set) == 0:
+            raise ValueError("No clustering method specified")
+        
+        for m in methods_set:
+            # check if already created
+            
+            method_id = m["id"]
+            print(f"Processing {method_id}")
             out = self.output_dir / f"result_{method_id}.csv"
-            combined.to_csv(out, index=False)
-            print(f"saved {len(combined)} rows to {out}")
+            if out.exists() and not rerun_files:
+                print("Result file already exists")
+                continue
+            all_results = Parallel(n_jobs=n_jobs, verbose=100)(
+                delayed(self._process_single_target)(target,m)
+                for target in targets
+            )
 
-    def _process_single_target(self, target: str) -> Dict[str, pd.DataFrame]:
+            # now save whats needed
+            # first save the results
+            all_best_results = [ r["best_cluster"] for r in all_results]
+            #print(all_best_results)
+            combined = pd.DataFrame(all_best_results)
+            #print(combined)
+            combined.to_csv(out, index=False)
+            print(f"Saved {len(combined)} rows to {out}")
+
+            save_sim = self.options.get("save_similarity_matrix", False)
+            sim_out = self.output_dir / f"sim_{method_id}.json.gz"
+            if not sim_out.exists():
+                sims = {item["target"]:item["sim_matrix"].to_dict(orient='index') for item in all_results }
+                with gzip.open(sim_out, 'wt') as f:
+                    json.dump(sims, f, indent=0)    
+
+            save_all_clusters = self.options.get("save_all_clusters", False)
+            if save_all_clusters:
+                combined_df = pd.concat([item["all_clusters"] for item in all_results], ignore_index=True)
+                
+                out_all_c = self.output_dir / f"clusters_{method_id}.parquet"
+                combined_df.to_parquet(out_all_c, compression='gzip', index=False)
+
+
+    def _process_single_target(self, target: str,method_config:str) -> Dict[str, pd.DataFrame]:
         try:
             checkpoint_file = self.checkpoint_dir / f"{target}.pkl"
             if not checkpoint_file.exists():
                 return None
 
             checkpoint_data = joblib.load(checkpoint_file)
-            results_by_method = {}
 
-            for method_config in self.options.get("clustering", []):
-                method_id = method_config["id"]
-                sim_matrix = self._get_sim_matrix(checkpoint_data, method_config["matrix_id"])
-                if sim_matrix is None:
-                    continue
+            results = {
+                "all_clusters":None,
+                "best_cluster":None,
+                "sim_matrix":None,
+                "sim_matrix_name": method_config["matrix_id"],
+                "target":target
+            }
+            
+            method_id = method_config["id"]
+            sim_matrix = self._get_sim_matrix(checkpoint_data, method_config["matrix_id"])
+            results["sim_matrix"] = sim_matrix
+            if sim_matrix is None:
+                return None
 
-                _, clusters_df = identify_coregulators(
+            _, clusters_df,best_cluster = identify_coregulators(
                     sim_matrix,
                     target,
                     method=method_config["method"],
                     method_options=method_config["method_options"]
-                )
+            )
+            if clusters_df is None or clusters_df.empty:
+                print(f"No clusters generated for {target}")
+                return None
 
-                if clusters_df is None or clusters_df.empty:
-                    continue
-
-                clusters_df["method"] = f"{self.title}-coregtor-{method_id}"
-                results_by_method[method_id] = clusters_df
-
-            return results_by_method
-
+            clusters_df["note"] = f"{self.title}-coregtor-{method_id}"
+            best_cluster["note"] = f"{self.title}-coregtor-{method_id}"
+            results["all_clusters"] = clusters_df
+            results["best_cluster"] = best_cluster
+            return results
         except Exception as e:
             traceback.print_exc()
             print(f"error processing {target}: {e}")

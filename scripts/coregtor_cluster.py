@@ -135,8 +135,6 @@ def _format_clusters_df(
             'target': target_gene,
             'sources': ';'.join(genes),
             'n_sources': n_sources,
-            # total_genes → n_samples
-            'n_percent': round((n_sources / n_samples) * 100, 4),
             'silhouette_score': sil_score,
         })
 
@@ -210,6 +208,39 @@ def _compute_threshold_for_min_cluster_size(
         return valid_thresholds[best_idx]
     else:
         raise ValueError(f"Unknown optimization: {optimization}")
+
+def _select_optimal_cluster(
+    clusters_df: pd.DataFrame,
+    selection_method: str = 'silhouette'
+) -> Optional[Dict[str, Any]]:
+    """Select optimal cluster from results.
+    
+    Args:
+        clusters_df: DataFrame with all clusters
+        selection_method: Method to select best cluster
+            - 'silhouette': Highest average silhouette score (default)
+            - 'largest': Most genes
+            - 'first': First cluster (highest silhouette after sort)
+    
+    Returns:
+        Dict with cluster info or None if no clusters
+    """
+    if clusters_df.empty:
+        return None
+    
+    # If only one cluster, return it regardless of method
+    if len(clusters_df) == 1:
+        best_row = clusters_df.iloc[0]
+    elif selection_method == 'silhouette':
+        best_row = clusters_df.loc[clusters_df['silhouette_score'].idxmax()]
+    elif selection_method == 'largest':
+        best_row = clusters_df.loc[clusters_df['n_sources'].idxmax()]
+    elif selection_method == 'first':
+        best_row = clusters_df.iloc[0]
+    else:
+        raise ValueError(f"Unknown selection_method: {selection_method}")
+    
+    return best_row.copy()
 
 def hierarchical_clustering(
     sim_matrix: pd.DataFrame,
@@ -314,7 +345,13 @@ def hierarchical_clustering(
         sim_matrix, labels, target_gene, min_module_size
     )
 
-    return model, clusters_df
+    optimal_cluster = _select_optimal_cluster(
+        clusters_df, 
+        method_options.get('cluster_selection', 'silhouette')
+    )
+
+    return model, clusters_df, optimal_cluster
+    #return model, clusters_df
 
 # def validation_index(
 #     sim_matrix: pd.DataFrame,
@@ -427,7 +464,7 @@ def identify_coregulators(
     method: str = "hierarchical_clustering",
     method_options: Dict[str, Any] = {},
     **kwargs
-) -> Dict[str, Any]:
+):
     """Identify co-regulatory modules from gene similarity matrix.
 
     Args:

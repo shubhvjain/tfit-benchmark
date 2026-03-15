@@ -240,7 +240,7 @@ def _select_optimal_cluster(
     else:
         raise ValueError(f"Unknown selection_method: {selection_method}")
     
-    return best_row.copy()
+    return best_row.to_dict()
 
 def hierarchical_clustering(
     sim_matrix: pd.DataFrame,

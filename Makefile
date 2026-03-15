@@ -135,7 +135,7 @@ nb:
 	poetry run jupyter lab
 
 web1:
-	poetry run flask --app web/app.py run
+	poetry run flask --app web/app.py run --debug
 
 pr:
 	poetry run $(cmd)

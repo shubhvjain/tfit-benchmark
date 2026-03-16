@@ -53,11 +53,12 @@
     "coregtor": {
       "clustering": [
         {
-          "id": "default",
+          "id": "r1",
           "matrix_id": "default",
           "method": "hierarchical_clustering",
           "method_options": {
-            "auto_threshold": "inconsistency"
+            "auto_threshold": "inconsistency",
+            "cluster_selection":"silhouette"
           }
         }
       ]

@@ -15,8 +15,7 @@
     "lung",
     "muscle_skeletal",
     "thyroid",
-    "luad",
-    "lusc"
+    "breast"
   ],
   "target": {
     "type": "no_tf",

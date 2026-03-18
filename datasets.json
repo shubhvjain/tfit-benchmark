@@ -114,7 +114,7 @@
       "title": "Gene TPMs for Breast - Mammary Tissue.",
       "url": "https://storage.googleapis.com/adult-gtex/bulk-gex/v11/rna-seq/tpms-by-tissue/gene_tpm_v11_breast_mammary_tissue.gct.gz",
       "about": "Source https://www.gtexportal.org/home/downloads/adult-gtex/bulk_tissue_expression",
-      "file_name": "gene_tpm_v11_breast_mammary_tissue.gct.gz",
+      "file_name": "gene_tpm_v11_breast_mammary_tissue.gct",
       "file_output": "gtex_bulk"
     },
      {
@@ -125,7 +125,7 @@
       "file_name": "gene_reads_v11_lung.gct",
       "file_output": "gtex_bulk_reads"
     },
-        {
+    {
       "id": "luad",
       "title": "TCGA-LUAD Gene Expression Raw Counts",
       "project": "TCGA-LUAD",

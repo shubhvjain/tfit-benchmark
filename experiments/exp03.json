@@ -1,5 +1,5 @@
 {
-  "type": "run_tool",
+  "type": "tissue_analysis",
   "about": "To run CoRegTor,CoRegNet on multiple bulk tissue gene expression datasets from GTEx portal for 50 targets and 200 Transcription factors. The target were chosen to be targets in the collectri network with 20 or more sources and the TF for these sources ",
   "tags": [],
   "rerun": false,
@@ -14,7 +14,8 @@
     "kidney_cortex",
     "lung",
     "muscle_skeletal",
-    "thyroid"
+    "thyroid",
+    "breast"
   ],
   "target": {
     "type": "custom",
@@ -1018,7 +1019,7 @@
     "coregtor": {
       "clustering": [
         {
-          "id": "default",
+          "id": "r1",
           "matrix_id": "default",
           "method": "hierarchical_clustering",
           "method_options": {
@@ -1026,28 +1027,64 @@
           }
         }
       ]
+    },
+    "coregnet":{
+      "id":"r1"
     }
   },
-  "results":[
+  "results":[ 
     {
-      "name":"tool_plots",
-      "type":"tool_comparison_plots",
-      "files":[
-        {
-          "dataset":"amygdala",
-          "files":{
-            "coregnet":"results",
-            "coregtor":"result_default"
-          }
-        },
-        {
-          "dataset":"bladder",
-          "files":{
-            "coregnet":"results",
-            "coregtor":"result_default"
-          }
-        }
-      ]
+      "name":"add_index",
+      "type":"add_performance_scores",
+      "files":[{"tool":"coregtor","result":"r1"},{"tool":"coregnet","result":"r1"}],
+      "datasets":["amygdala",
+    "bladder",
+    "blood",
+    "cortex-ba9",
+    "heart_left_ventricle",
+    "heart_atrial_appendage",
+    "hypothalamus",
+    "kidney_cortex",
+    "lung",
+    "muscle_skeletal",
+    "thyroid"]
+    },
+    {
+      "name":"test_combined_index",
+      "type":"combine_performance_scores",
+      "datasets":["amygdala",
+    "bladder",
+    "blood",
+    "cortex-ba9",
+    "heart_left_ventricle",
+    "heart_atrial_appendage",
+    "hypothalamus",
+    "kidney_cortex",
+    "lung",
+    "muscle_skeletal",
+    "thyroid"],
+      "files":[{"tool":"coregtor","result":"r1"},{"tool":"coregnet","result":"r1"}]
+    },
+    {
+      "name":"test_dataset_plots",
+      "type":"create_performance_scores_plot",
+      "file_name":"test_combined_index",
+      "datasets":["amygdala",
+    "bladder",
+    "blood",
+    "cortex-ba9",
+    "heart_left_ventricle",
+    "heart_atrial_appendage",
+    "hypothalamus",
+    "kidney_cortex",
+    "lung",
+    "muscle_skeletal",
+    "thyroid"]
+    },
+    {
+      "name":"r1_plot",
+      "type":"create_combined_performance_scores_plot"
+      
     }
   ]
 }

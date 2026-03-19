@@ -7,7 +7,6 @@ Usage:
     python coregtor_run.py result exp1 amygdala
 """
 
-import os
 import sys
 import json
 import sqlite3
@@ -15,9 +14,12 @@ import argparse
 from pathlib import Path
 from util import get_dataset
 from coregtor_pipeline import Pipeline, PipelineResults
-from util import get_output_path,get_temp_path,get_exp_path,get_experiment_paths
+from util import get_experiment_paths
 TOOL = "coregtor"
 import time 
+
+import pandas as pd
+import numpy as np
 #  ------  Config  ------ 
 
 def build_config(exp_name: str, dataset_id: str, exp: dict, targets: list[str]) -> dict:

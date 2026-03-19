@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 import json
-from util import get_experiment_paths,get_dataset
+from util import get_experiment_paths,get_dataset,get_experiment_file
 import sys
 import os
 import secrets
@@ -77,9 +77,11 @@ def get_data(input_details: dict, dataset: pd.DataFrame):
 
 
 def coregnet_results(exp_name,dataset_id):
-    
+    exp = get_experiment_file(exp_name)
+    file_prefix = exp.get("tool_result",{}).get("coregnet",{}).get("id","r1")
+
     grn_path = Path(os.getenv("EXP_OUTPUT_PATH")) / exp_name/ dataset_id / "coregnet" / "grn.csv"
-    out_path = Path(os.getenv("EXP_OUTPUT_PATH")) / exp_name/ dataset_id / "coregnet" / "results.csv"
+    out_path = Path(os.getenv("EXP_OUTPUT_PATH")) / exp_name/ dataset_id / "coregnet" / f"result_{file_prefix}.csv"
 
     if not grn_path.exists():
         raise FileNotFoundError(f"GRN file not found: {grn_path}")

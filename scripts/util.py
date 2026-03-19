@@ -65,6 +65,14 @@ def get_experiment_paths(exp_name, dataset, tool):
         "db_file": get_output_path() / exp_name / dataset/tool/"status.db"
     }
 
+def get_experiment_file(id):
+    """
+    returns the exp file json as dict
+    """
+    fp = get_exp_path()/f"{id}.json"
+    with open(fp,"r") as f:
+        exp = json.load(f)
+    return exp
 
 def get_mappings(gene_list, source, target, batch_size=900):
     """

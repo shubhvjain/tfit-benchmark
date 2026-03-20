@@ -44,7 +44,7 @@ CONTAINER_ENV = \
 BUILD_COREGTOR = docker build -f $(CONTAINERS_DIR)/coregtor.Dockerfile -t $(COREGTOR_IMAGE) .
 BUILD_COREGNET = docker build -f $(CONTAINERS_DIR)/coregnet.Dockerfile -t $(COREGNET_IMAGE) .
 BUILD_TCGA = docker build -f $(CONTAINERS_DIR)/tcga.Dockerfile -t $(TCGA_IMAGE) .
-
+TCGA_BIND = -v $(PWD)/datasets.json:/app/datasets.json
 else ifeq ($(container_app),apptainer)
 CONTAINER_RUNTIME = apptainer exec
 COREGTOR_IMAGE = $(CONTAINER_PATH)/tfit-coregtor.sif
@@ -65,7 +65,8 @@ CONTAINER_ENV = \
     --env DATA_PATH=$(WS_DATA),EXP_INPUT_PATH=$(WS_INPUT),EXP_TEMP_PATH=$(WS_TEMP),EXP_OUTPUT_PATH=$(WS_OUTPUT),MODE=$(mode),ANALYSIS_INPUT_PATH=$(WS_RESULT_INPUT),ANALYSIS_OUTPUT_PATH=$(WS_RESULT_OUTPUT),DATA_STATIC_PATH=$(WS_DATA_STATIC_PATH),PYTHONPATH=/app/scripts
 BUILD_COREGTOR = apptainer build $(COREGTOR_IMAGE) $(CONTAINERS_DIR)/coregtor.def
 BUILD_COREGNET = apptainer build $(COREGNET_IMAGE) $(CONTAINERS_DIR)/coregnet.def
-BUILD_TCGA = apptainer build $(TCGA_IMAGE) $(CONTAINERS_DIR)/coregnet.def
+BUILD_TCGA = apptainer build $(TCGA_IMAGE) $(CONTAINERS_DIR)/tcga.def
+TCGA_BIND = --bind $(PWD)/datasets.json:/app/datasets.json
 else
 $(error Unknown container_app: "$(container_app)". Use docker or apptainer)
 endif
@@ -92,7 +93,7 @@ datasets: ## Download all datasets required
 	poetry run python scripts/datasets.py $(if $(dataset),--id $(dataset) , --all) 
 
 tcga-datasets:
-	$(RUN) $(TCGA_IMAGE) Rscript $(SCRIPTS_DIR)/fetch_tcga.r 
+	$(RUN) $(TCGA_BIND) $(TCGA_IMAGE) Rscript $(SCRIPTS_DIR)/fetch_tcga.r
 
 setup-tfitpy: ## Download all datasets required for tfitpy
 	poetry run python scripts/tfitpy_setup.py
@@ -127,7 +128,7 @@ new-analysis: ## Create new analysis file. Pass name=analysis1
 	poetry run python scripts/util_project_files.py new analysis $(id)
 
 run-analysis: ## Run an analysis file. Pass id=<id>
-	poetry run python scripts/analysis.py run $(id)
+	poetry run python scripts/analysis.py run $(id)  $(if $(rerun),--rerun,) 
 
 # ======= Dev ==========
 

@@ -140,6 +140,14 @@
       "about": "STAR raw counts from GDC for TCGA Lung Squamous Cell Carcinoma. Rows=samples, Cols=HGNC genes.",
       "file_name": "counts_raw.parquet",
       "file_output": "tcga_counts"
+    },
+     {
+      "id": "brca",
+      "title": "TCGA-BRCA Gene Expression Raw Counts",
+      "project": "TCGA-BRCA",
+      "about": "STAR raw counts from GDC for TCGA Breast Invasive Carcinoma. Rows=samples, Cols=HGNC genes.",
+      "file_name": "counts_raw.parquet",
+      "file_output": "tcga_counts"
     }
   ]
 }

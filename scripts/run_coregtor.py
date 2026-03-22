@@ -213,7 +213,8 @@ def run(exp_name: str, dataset_id: str, worker_id: str, batch_size: int):
 
     config = build_config(exp_name, dataset_id, exp, targets)
     tfs = input_data["tf"]
-    _, dataset = get_dataset(dataset_id)
+    #print(exp)
+    _, dataset = get_dataset(dataset_id,normalize=False,sample_type=exp.get("dataset_sample_type",None))
 
     pipeline = Pipeline(
         expression_data=dataset,

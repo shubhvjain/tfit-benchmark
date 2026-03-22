@@ -189,7 +189,7 @@ def normalize_counts(
     return np.log2(expr + 1)
 
 
-def get_dataset(name,normalize=True):
+def get_dataset(name,normalize=True,sample_type="disease"):
     """Load dataset using metadata 'file_output' field"""
     p = get_data_path() / f"{name}"
     meta_path = p / "metadata.json"
@@ -225,7 +225,8 @@ def get_dataset(name,normalize=True):
     elif output_type == "tcga_counts":
         # ── NEW: TCGA raw counts saved by fetch_tcga.py ──────────────────
         # counts_raw.parquet  →  rows = samples, cols = HGNC gene names
-        data = pd.read_parquet(file_path)
+        data = read_tcga(name,sample_type)
+        # data = pd.read_parquet(file_path)
         ## normalize data
         if normalize:
             data = normalize_counts(data, method="log2cpm")
@@ -285,41 +286,75 @@ def read_gct(file_path) -> pd.DataFrame:
     except Exception as e:
         raise ValueError(f"Error reading GCT file {file_path}: {str(e)}")
 
-
-def load_tcga(project_suffix: str) -> tuple[pd.DataFrame, pd.DataFrame]:
+def read_tcga(
+    project_suffix: str, 
+    sample_type: str = "disease"
+) -> pd.DataFrame:
     """
-    Convenience wrapper — load TCGA counts + sample metadata together.
-
+    Load TCGA gene expression counts for specified sample type.
+    
     Parameters
     ----------
     project_suffix : str
         Lowercase project suffix, e.g. "luad", "lusc", "brca"
-
+    sample_type : str, default="disease"
+        Either "disease" (tumor) or "normal"
+    
     Returns
     -------
     counts : pd.DataFrame   — samples × genes (raw counts)
-    meta   : pd.DataFrame   — sample metadata (sample_type, is_tumor, …)
-
+    
     Example
     -------
-    counts, meta = load_tcga("luad")
-    tumor   = counts[meta["is_tumor"]]
-    normal  = counts[~meta["is_tumor"]]
+    tumor_counts = load_tcga("luad")
+    normal_counts = load_tcga("luad", sample_type="normal")
     """
     from pathlib import Path
-    import json
-
+    import pandas as pd
+    
+    if sample_type not in ["disease", "normal"]:
+        raise ValueError(f"sample_type must be 'disease' or 'normal', got '{sample_type}'")
+    
     name = project_suffix.lower()
     dataset_dir = get_data_path() / name
-
-    meta_json_path = dataset_dir / "metadata.json"
-    if not meta_json_path.exists():
-        raise FileNotFoundError(
-            f"Dataset '{name}' not found. "
-        )
-
+    
     counts = pd.read_parquet(dataset_dir / "counts_raw.parquet")
     meta   = pd.read_parquet(dataset_dir / "metadata.parquet")
+    
+    # Filter by sample type
+    mask = meta["is_tumor"] if sample_type == "disease" else ~meta["is_tumor"]
+    
+    if not mask.any():
+        raise ValueError(f"No {sample_type} samples found in {name}")
+    
+    print(len(counts[mask]))
+    return counts[mask]
 
-    return counts, meta
 
+def filter_protein_coding_genes(gene_list):
+    """
+    Takes a list of genes, returns only protein-coding ones
+    
+    Args:
+        gene_list: list of gene names
+        
+    Returns:
+        list of protein-coding gene names
+    """
+    db_path = get_data_path() / "gencode" / "gene_name_mapping.db"
+    con = sqlite3.connect(db_path)
+    
+    # Get protein-coding genes from the input list
+    placeholders = ','.join(['?'] * len(gene_list))
+    query = f"""
+        SELECT DISTINCT gene_name
+        FROM mappings
+        WHERE gene_name IN ({placeholders})
+        AND gene_type = 'protein_coding'
+    """
+    
+    cursor = con.execute(query, gene_list)
+    protein_coding = [row[0] for row in cursor.fetchall()]
+    con.close()
+    
+    return protein_coding

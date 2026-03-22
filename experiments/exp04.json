@@ -1,16 +1,17 @@
 {
   "type": "run_tool",
-  "about": "To run CoRegTor for analysis 01-disease-luad and 02-disease-lusc with top 10k highly expressed targets",
+  "about": "To run CoRegTor for analysis differential gene expression analysis with top 10k highly expressed targets. TCGA normal samples ",
   "tags": [],
   "rerun": false,
   "datasets": [
-    "lung_reads",
+    "brca",
     "luad",
     "lusc"
   ],
+  "dataset_sample_type":"normal",
   "target": {
     "type": "no_tf",
-    "top_expressed_n": 10000
+    "top_expressed_n": 100
   },
   "tf": {
     "non_zero_threshold": 0.8

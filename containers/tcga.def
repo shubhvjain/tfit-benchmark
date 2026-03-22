@@ -1,12 +1,12 @@
 Bootstrap: docker
 From: bioconductor/bioconductor_docker:RELEASE_3_19
 
-%files
-    datasets.json /app/datasets.json
-
 %post
-    Rscript -e "install.packages(c('jsonlite', 'arrow'), repos='https://cloud.r-project.org'); \
-    BiocManager::install(c('TCGAbiolinks', 'SummarizedExperiment'), ask=FALSE, update=FALSE)"
+    R -e "install.packages(c('jsonlite', 'arrow'), repos='https://cloud.r-project.org')"
+    R -e "BiocManager::install(c('TCGAbiolinks', 'SummarizedExperiment'), ask=FALSE, update=FALSE)"
+
+%environment
+    export LC_ALL=C
 
 %runscript
     cd /app

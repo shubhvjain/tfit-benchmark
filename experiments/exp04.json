@@ -11,7 +11,7 @@
   "dataset_sample_type":"normal",
   "target": {
     "type": "no_tf",
-    "top_expressed_n": 100
+    "top_expressed_n": 10000
   },
   "tf": {
     "non_zero_threshold": 0.8

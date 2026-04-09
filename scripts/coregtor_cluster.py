@@ -114,6 +114,9 @@ def _format_clusters_df(
         'cluster_id': cluster_labels,
         'sil': sil_per_gene
     })
+    # gene ranking using sil score and simple filtering
+    gene_df = gene_df[gene_df['sil']>0.01]
+    #gene_df = gene_df.sort_values(by=["sil"],ascending=False)
 
     # Filter small clusters
     cluster_sizes = gene_df['cluster_id'].value_counts()
@@ -121,12 +124,13 @@ def _format_clusters_df(
     gene_df = gene_df[gene_df['cluster_id'].isin(valid_clusters)].copy()
 
     if gene_df.empty:
-        return pd.DataFrame(columns=['cluster_uid', 'target', 'sources', 'n_sources', 'n_percent', 'silhouette_score'])
+        return pd.DataFrame(columns=['cluster_uid', 'target', 'sources', 'n_sources', 'silhouette_score'])
 
     # Aggregate to one row per cluster
     rows = []
     for cluster_id, group in gene_df.groupby('cluster_id'):
         genes = group.sort_values('sil', ascending=False)['gene'].tolist()
+        gene_scores = group.sort_values('sil', ascending=False)['sil'].round(6).astype(str).tolist()
         n_sources = len(genes)
         sil_score = 0.0 if not valid_for_silhouette else round(
             group['sil'].mean(), 4)
@@ -136,6 +140,7 @@ def _format_clusters_df(
             'sources': ';'.join(genes),
             'n_sources': n_sources,
             'silhouette_score': sil_score,
+            "source_scores":";".join(gene_scores)
         })
 
     return pd.DataFrame(rows).sort_values('silhouette_score', ascending=False).reset_index(drop=True)
